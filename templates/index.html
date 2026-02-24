@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск билетов</title>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-light">
+    
+    <!-- HEADER -->
+    <header class="bg-dark py-4 shadow-sm">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="text-head">
+                        <span class="navbar-text h2 text-white fw-bold">
+                            PostgreSQL
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SEARCH SECTION -->
+<section class="find py-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <div class="find-container">
+
+                    <div class="search-grid">
+
+                        <!-- Блок городов -->
+                        <div class="route-block">
+
+                            <div class="input-wrapper city-group">
+                                <label class="input-label">Откуда</label>
+                                <input type="text"
+                                       class="city-input"
+                                       id="fromCity"
+                                       placeholder="Город"
+                                       autocomplete="off">
+                                <div id="fromDropdown"></div>
+                            </div>
+
+                            <button class="btn-swap " type="button">
+                                <img src="/static/arrows.svg" width="18" height="18" alt="swap">
+                            </button>
+
+                            <div class="input-wrapper city-group">
+                                <label class="input-label">Куда</label>
+                                <input type="text"
+                                       class="city-input"
+                                       id="toCity"
+                                       placeholder="Город"
+                                       autocomplete="off">
+                                <div id="toDropdown"></div>
+                            </div>
+
+                        </div>
+
+                        <!-- Блок дат -->
+                        <div class="date-block">
+                            <div class="input-wrapper">
+                                <label class="input-label">Туда</label>
+                                <input type="date" class="date-input" id="dateFrom">
+                            </div>
+
+                            <div class="input-wrapper">
+                                <label class="input-label">Обратно</label>
+                                <input type="date" class="date-input" id="dateTo">
+                            </div>
+                        </div>
+
+                        <!-- Кнопка поиска -->
+                        <div class="search-button-block">
+                            <button type="button" class="btn-search bg-dark">
+                                Найти билеты
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- SQL TEXT
+    <section class="sql-text pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="sql-request text-muted small">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+     -->
+    
+    <!-- RESULTS -->
+    <section class="sec-segments pb-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="overflow-auto" style="height: 600px;">
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>

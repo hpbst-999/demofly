@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style2.css">
+    <link rel="stylesheet" href="/static/sweetalert2.min.css">
+    <title>Админка</title>
+</head>
+<body>
+    <header class="bg-dark  shadow-sm">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="text-head">
+                        <span class="navbar-text h5 text-white fw-bold">
+                            Admin panel
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Боковая панель -->
+    <div class="col-2 bg-light vh-100" id="sidebar">
+        <ul id="sidebar-tables" class="list-group list-group-flush">
+        </ul>
+    </div>
+
+
+    <!-- Основная часть -->
+    <div class="col-10">
+      <!-- Верхняя панель -->
+    <div class="row p-2 border-bottom align-items-center" id="toolbar">
+      <!-- Поиск -->
+      <div class="col-md-4">
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="search-input" 
+            class="form-control" 
+            placeholder="Поиск..."
+          >
+          <button class="btn btn-outline-secondary" id="btn-search">
+            Поиск
+          </button>
+        </div>
+      </div>
+
+      <!-- Кнопки CRUD -->
+      <div class="col-md-8 text-end">
+        <div class="btn-group">
+          <button class="btn btn-success" id="btn-create"> Создать</button>
+          <button class="btn btn-primary" id="btn-edit"> Изменить </button>
+          <button class="btn btn-danger" id="btn-delete"> Удалить </button>
+        </div>
+      </div>
+
+    </div>
+
+
+      <!-- Нижняя часть -->
+      <div class="row" style="height: calc(100vh - 120px);">
+        <!-- Основная таблица -->
+        <div class="col-6 border-end overflow-auto" id="main-table">
+          Выберите таблицу
+        </div>
+        <!-- Вложенная таблица -->
+        <div class="col-6" id="detail-table">
+          Detail table
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <script src="/static/list.js"></script>
+    <script src="/static/script2.js"></script>
+    <script src="/static/sweetalert2.all.min.js"></script>
+</body>
+</html>
