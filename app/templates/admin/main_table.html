@@ -1,0 +1,24 @@
+<div class="col-6 border-end overflow-auto" id="main-table" style="height: 100%;">
+    {% if data %}
+    <table class="table table-striped table-bordered table-hover" id="data-table">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th class="sort" data-sort="{{ col }}">{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody class="list">
+            {% for row in data %}
+            <tr class="clickable-row" data-row-data='{{ row | tojson }}'>
+                {% for col in columns %}
+                <td class="{{ col }}">{{ row[col] if row[col] is not none else "" }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="p-4 text-muted text-center">Выберите таблицу для просмотра данных</div>
+    {% endif %}
+</div>

@@ -1,0 +1,8 @@
+<div class="col-2 bg-light vh-100 border-end" id="sidebar">
+    <ul id="sidebar-tables" class="list-group list-group-flush">
+        {% for table in tables %}
+        <li class="list-group-item list-group-item-action sidebar-li">{{ table.name }}</li>
+        
+        {% endfor %}
+    </ul>
+</div>
