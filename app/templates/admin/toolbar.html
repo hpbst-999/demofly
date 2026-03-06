@@ -1,23 +1,17 @@
-<div class="row p-2 border-bottom align-items-center bg-white sticky-top" id="toolbar">
+<div class="row p-2 border-bottom align-items-center bg-white" >
     
-    <div class="col-md-4">
-        <div class="input-group">
-            <input 
-            type="text" 
-            id="search-input" 
-            class="form-control" 
-            placeholder="Поиск...">
-          <button class="btn btn-outline-secondary" id="btn-search">
-            Поиск
-          </button>
-        </div>
+<form action="{{ url_for('admin_bp.search_default_data', table_name=current_table) }}" method="GET" class="col-md-4">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Поиск в {{ current_table }}..." value="{{ request.args.get('q', '') }}">
+        <button class="btn btn-outline-secondary" type="submit">Поиск</button>
     </div>
+</form>
 
     <div class="col-md-8 text-end">
         <div class="btn-group shadow-sm" role="group" aria-label="Table controls">
-        <button class="btn btn-success" id="btn-create"> Создать</button>
-          <button class="btn btn-primary" id="btn-edit"> Изменить </button>
-          <button class="btn btn-danger" id="btn-delete"> Удалить </button>
+        <button class="btn btn-success" > Создать</button>
+          <button class="btn btn-primary"> Изменить </button>
+          <button class="btn btn-danger"> Удалить </button>
         </div>
     </div>
 

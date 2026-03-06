@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поиск билетов</title>
-    <link rel="stylesheet" href="/static/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body class="bg-light">
     
     <!-- HEADER -->
-    <header class="bg-dark py-4 shadow-sm">
+    <header class="bg-dark py-3 shadow-sm">
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
                     <div class="text-head">
                         <span class="navbar-text h2 text-white fw-bold">
-                            PostgreSQL
+                            DemoFly
                         </span>
                     </div>
                 </div>
@@ -91,22 +91,6 @@
     </div>
 </section>
 
-
-    <!-- SQL TEXT
-    <section class="sql-text pb-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="sql-request text-muted small">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-     -->
-    
-    <!-- RESULTS -->
     <section class="sec-segments pb-5">
         <div class="container">
             <div class="row">
@@ -119,7 +103,7 @@
         </div>
     </section>
 
-    <script src="/static/bootstrap.bundle.min.js"></script>
-    <script src="/static/script.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -1,19 +1,15 @@
 {% extends 'admin/base.html' %}
 
 {% block layout %}
+  
     {% include 'admin/sidebar.html' %}
 
-    <div class="col-10">
-        {% include 'admin/toolbar.html' %}
-
-        <div class="row" style="height: calc(100vh - 120px);">
-            <div class="col-6 border-end overflow-auto" id="main-table">
-                </div>
+        <div class="col-10 d-flex flex-column vh-100">
+            {% include 'admin/toolbar.html' %}
+        
+        <div class="row g-0 flex-grow-1 overflow-hidden">
+            {% include 'admin/main_table.html' %} 
             {% include 'admin/detail_table.html' %}
         </div>
     </div>
-{% endblock %}
-
-{% block scripts %}
-    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}

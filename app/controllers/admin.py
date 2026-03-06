@@ -59,55 +59,46 @@ class AdminController:
     
 
     
-    def search_default_data(self):
-        table_name = request.args.get('t', '').strip()
-        if not table_name:
-            return jsonify({"error": "table parameter is required"}), 400
-
-        try:
-            rows = get_default_data(table_name)
-            if table_name == "routes" and rows:
-                data = [self.serialize_row_safe(r) for r in rows]
-            else:
-                data = rows if rows else []
-
-            columns = list(data[0].keys())
-            return  render_template("admin/main_table.html", data=data, columns = columns)
-        except Exception:
-            return jsonify({"error": "Server error"}), 500
-
-    def search_advanced_data(self):
-
-        table_name = request.args.get("t", "").strip()
+    def search_default_data(self, table_name):
         search_query = request.args.get("q", "").strip()
-        if not table_name:
-            return jsonify({"error": "table parameter is required"}), 400
+
         if table_name not in self.ALLOWED_TABLES:
             return jsonify({"error": "table not allowed"}), 400
-        
-        
-        try:
-            if search_query:
+        if search_query:
+            try:
                 if re.match(pattern_num, search_query):
                     columns  =['ticket_no']  
                 elif re.match(pattern_code_num, search_query):
                     columns  =['passenger_id']
                 else:
-                    columns = get_columns(table_name)
+                    columns = [item['column_name'] for item in get_columns(table_name)]
+
                 rows = get_default_data(table_name,columns, search_query)
-            else:
+
+                if table_name == "routes" and rows:
+                    data = [self.serialize_row_safe(r) for r in rows]
+                else:
+                    data = rows if rows else []
+                columns = list(data[0].keys())
+
+                return render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name)
+            except Exception as e:
+                print(e)
+                return jsonify({"error": "Server error"}), 500
+
+        else:
+            try:
                 rows = get_default_data(table_name)
+                if table_name == "routes" and rows:
+                    data = [self.serialize_row_safe(r) for r in rows]
+                else:
+                    data = rows if rows else []
 
-            if table_name == "routes" and rows:
-                data = [self.serialize_row_safe(r) for r in rows]
-            else:
-                data = rows if rows else []
+                columns = list(data[0].keys())
+                return  render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name)
+            except Exception:
+                return jsonify({"error": "Server error"}), 500
 
-            return jsonify({
-                "table": table_name,
-                "data": data
-            })
-        except Exception as e:
-            print(e)
-            return jsonify({"error": "Server error"}), 500
+
+
     

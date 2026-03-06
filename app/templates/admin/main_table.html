@@ -1,18 +1,20 @@
-<div class="col-6 border-end overflow-auto" id="main-table" style="height: 100%;">
+<div class="col-6 border-end overflow-auto h-100 p-0">
     {% if data %}
-    <table class="table table-striped table-bordered table-hover" id="data-table">
-        <thead>
+    <table class="table table-sm table-striped table-bordered table-hover mb-0">
+        <thead class="table-light sticky-top shadow-sm">
             <tr>
                 {% for col in columns %}
-                <th class="sort" data-sort="{{ col }}">{{ col }}</th>
+                <th class="py-2 px-3">{{ col }}</th>
                 {% endfor %}
             </tr>
         </thead>
-        <tbody class="list">
+        <tbody>
             {% for row in data %}
-            <tr class="clickable-row" data-row-data='{{ row | tojson }}'>
+            <tr>
                 {% for col in columns %}
-                <td class="{{ col }}">{{ row[col] if row[col] is not none else "" }}</td>
+                <td class="py-2 px-3">
+                    {{ row[col] if row[col] is not none else "" }}
+                </td>
                 {% endfor %}
             </tr>
             {% endfor %}

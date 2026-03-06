@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}">
     <title>{% block title %}Админка{% endblock %}</title>
 </head>
-<body>
-    <header class="bg-dark shadow-sm">
-        <div class="container text-center text-white fw-bold p-2">Admin panel</div>
+
+<body class="vh-100 d-flex flex-column overflow-hidden bg-light">
+
+    <header class="bg-dark shadow-sm flex-shrink-0">
+        <div class="container-fluid text-center text-white fw-bold p-2">
+            Admin panel
+        </div>
     </header>
 
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid flex-grow-1 overflow-hidden">
+        <div class="row h-100 g-0">
             {% block layout %}{% endblock %}
         </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/sweetalert2.all.min.js') }}"></script>
-    {% block scripts %}{% endblock %}
+
 </body>
 </html>
