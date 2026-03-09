@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, redirect
 import psycopg2.extras
 import datetime
 import re
@@ -28,6 +28,17 @@ class AdminController:
         "segments", "flights", "routes",
         "airports", "airplanes", "seats"
     ]
+    TABLE_KEYS = {
+    "bookings": "book_ref",
+    "tickets": "ticket_no",
+    "flights": "flight_id",
+    "airports": "airport_code",
+    "airplanes": "airplane_code",
+    "routes": ["route_no","airplane_code"], 
+    "boarding_passes": ["ticket_no", "flight_id"],
+    "seats": ["airplane_code", "seat_no"],
+    "segments": ["flight_id", "ticket_no"]
+}
 
     def serialize_row_safe(self,row):
 
@@ -61,6 +72,9 @@ class AdminController:
     
     def search_default_data(self, table_name):
         search_query = request.args.get("q", "").strip()
+        id_row = request.args.get("id","").strip()
+        keys = self.TABLE_KEYS[table_name]
+
 
         if table_name not in self.ALLOWED_TABLES:
             return jsonify({"error": "table not allowed"}), 400
@@ -81,7 +95,7 @@ class AdminController:
                     data = rows if rows else []
                 columns = list(data[0].keys())
 
-                return render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name)
+                return render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row)
             except Exception as e:
                 print(e)
                 return jsonify({"error": "Server error"}), 500
@@ -95,10 +109,30 @@ class AdminController:
                     data = rows if rows else []
 
                 columns = list(data[0].keys())
-                return  render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name)
+                return  render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row)
             except Exception:
                 return jsonify({"error": "Server error"}), 500
+    
+    
+    def delete_row(self, table_name):
+        search_query = request.args.get("q", "").strip()
+        id_row = request.args.get("id","").strip()
+        keys = self.TABLE_KEYS[table_name]
+        return redirect()
+    
 
+    def update_row(self, table_name):
+        search_query = request.args.get("q", "").strip()
+        id_row = request.args.get("id","").strip()
+        keys = self.TABLE_KEYS[table_name]
+        return redirect()
+    
+
+    def create_row(self, table_name):
+        search_query = request.args.get("q", "").strip()
+        id_row = request.args.get("id","").strip()
+        keys = self.TABLE_KEYS[table_name]
+        return redirect()
 
 
     

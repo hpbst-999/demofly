@@ -9,11 +9,30 @@
             </tr>
         </thead>
         <tbody>
+
+        
             {% for row in data %}
-            <tr>
+
+                {% if keys is string%}
+                    {%set current_row = row[keys]%}
+                {%else%}
+                    {%set list_keys = []%}
+                    {%for key in keys%}
+                        {%set var = list_keys.append(row[key]|string)%}
+                    {%endfor%}
+                    {%set current_row = list_keys|join('|')%}
+                {%endif%}
+
+            <tr class="{{ 'bg-primary text-white' if current_row|string == selected_id|string else '' }}">
                 {% for col in columns %}
-                <td class="py-2 px-3">
-                    {{ row[col] if row[col] is not none else "" }}
+                <td class="p-0">
+                    <a href="{{ url_for('admin_bp.search_default_data', 
+                                        table_name=current_table, 
+                                        id=current_row, 
+                                        q=request.args.get('q')) }}" 
+                    class="text-decoration-none text-reset d-block py-2 px-3">
+                        {{ row[col] if row[col] is not none else "" }}
+                    </a>
                 </td>
                 {% endfor %}
             </tr>
