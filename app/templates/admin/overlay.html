@@ -1,0 +1,30 @@
+{% extends 'admin/newadmin.html' %}
+
+{% block overlay %}
+
+<div class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center"
+     style="background: rgba(0,0,0,0.5); z-index: 9999;">
+    
+    <div class="bg-white p-5 shadow-lg text-center" style="width: 1000px; max-width: 90%; height: 80vh; border-radius: 8px; position: relative;">
+        
+        <a href="{{ url_for('admin_bp.search_default_data', table_name=current_table) }}"
+           class="text-decoration-none text-dark fs-5"
+           style="position: absolute; top: 20px; right: 30px; line-height: 1; font-size: 2rem;">&times;</a>
+
+        <div class="mt-5">
+            <h3>{{ "Создание" if action == "create" else "Изменение" }}</h3>
+        </div>
+        <div>
+            {% for col in columns %}
+                <p>{{col}}</p>
+                <input
+                type="text"
+                class="form-control"
+                placeholder="Введите значение...">
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">OK</button>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

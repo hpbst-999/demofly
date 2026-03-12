@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, request, redirect
+from flask import render_template, jsonify, request, redirect, url_for
 import psycopg2.extras
 import datetime
 import re
@@ -74,8 +74,16 @@ class AdminController:
         search_query = request.args.get("q", "").strip()
         id_row = request.args.get("id","").strip()
         keys = self.TABLE_KEYS[table_name]
-
-
+        action = None
+        if request.args.get("create"):
+            template = "admin/overlay.html"
+            action = "create"
+        elif request.args.get("update") and id_row:
+            template = "admin/overlay.html"
+            action = "update"
+        else:
+            template = "admin/newadmin.html"
+        print(template, action)
         if table_name not in self.ALLOWED_TABLES:
             return jsonify({"error": "table not allowed"}), 400
         if search_query:
@@ -95,7 +103,7 @@ class AdminController:
                     data = rows if rows else []
                 columns = list(data[0].keys())
 
-                return render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row)
+                return render_template(template, data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row, action = action)
             except Exception as e:
                 print(e)
                 return jsonify({"error": "Server error"}), 500
@@ -109,16 +117,20 @@ class AdminController:
                     data = rows if rows else []
 
                 columns = list(data[0].keys())
-                return  render_template("admin/newadmin.html", data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row)
+                return  render_template(template, data=data, columns = columns, tables=self.entities["tables"], current_table=table_name, keys = keys, selected_id = id_row, action = action)
             except Exception:
                 return jsonify({"error": "Server error"}), 500
     
     
     def delete_row(self, table_name):
         search_query = request.args.get("q", "").strip()
-        id_row = request.args.get("id","").strip()
-        keys = self.TABLE_KEYS[table_name]
-        return redirect()
+        row_id = request.form.get('id')
+        
+        #tut sql nado
+
+        return redirect(url_for('admin_bp.search_default_data', 
+                            table_name=table_name, 
+                            q=search_query))
     
 
     def update_row(self, table_name):
@@ -133,6 +145,7 @@ class AdminController:
         id_row = request.args.get("id","").strip()
         keys = self.TABLE_KEYS[table_name]
         return redirect()
+    
 
 
     
