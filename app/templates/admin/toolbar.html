@@ -1,6 +1,6 @@
 <div class="row p-2 border-bottom align-items-center bg-white" >
     
-<form action="{{ url_for('admin_bp.search_default_data', table_name=current_table) }}" method="GET" class="col-md-4">
+<form action="{{ url_for('admin_bp.view_data_table', table_name=current_table) }}" method="GET" class="col-md-4">
     <div class="input-group">
         <input type="text" name="q" class="form-control" placeholder="Поиск в {{ current_table }}..." value="{{ request.args.get('q', '') }}">
         <button class="btn btn-outline-secondary" type="submit">Поиск</button>
@@ -10,7 +10,7 @@
     <div class="col-md-8 text-end">
     <div class="btn-group shadow-sm">
      
-        <a href="{{ url_for('admin_bp.search_default_data', 
+        <a href="{{ url_for('admin_bp.view_data_table', 
                             table_name=current_table, 
                             id=selected_id, 
                             q=request.args.get('q'),
@@ -19,7 +19,7 @@
            Создать
         </a>
 
-        <a href="{{ url_for('admin_bp.search_default_data', 
+        <a href="{{ url_for('admin_bp.view_data_table', 
                             table_name=current_table, 
                             id=selected_id, 
                             q=request.args.get('q'),

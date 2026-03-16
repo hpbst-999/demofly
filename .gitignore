@@ -10,3 +10,4 @@ app/templates/admin/admin.html
 venv/
 admin_old.py
 app_old.py
+boot.txt
