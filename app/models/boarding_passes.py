@@ -3,9 +3,9 @@ from datetime import datetime
 @dataclass
 class Boarding_passes:
     ticket_no: str
-    flight_id: str
+    flight_id: int
     seat_no: str
-    boarding_no: str
+    boarding_no: int
     boarding_time: datetime
 
 @dataclass
