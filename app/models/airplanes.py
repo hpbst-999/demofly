@@ -2,7 +2,7 @@ from dataclasses import dataclass
 @dataclass
 class Airplanes:
     airplane_code: str
-    model: str
+    model: dict
     range: int
     speed: int
 
@@ -17,7 +17,7 @@ class AirplanesDTO:
     def convert_to_dto(cls, airplane: Airplanes) -> 'AirplanesDTO':
         return cls(
             airplane_code=str(airplane.airplane_code),
-            model=str(airplane.model),
+            model=str(airplane.model.get('en', 'N/A')),
             range=str(airplane.range),
             speed=str(airplane.speed)
         )

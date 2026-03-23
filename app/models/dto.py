@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-
+from datetime import datetime
 @dataclass
 class Table_dto_request:
     table_name: str
@@ -9,8 +9,22 @@ class Table_dto_request:
     full_row: Optional[str] = None
 
 @dataclass
-class Table_dto_search:
+class Table_dto_search: #к репозиторию
     table_name: str
-    columns: Optional[str] = None
     search_query: Optional[str] = None
+
+@dataclass
+class Main_dto_request:
+    from_city:str
+    to_city:str
+    date_start:datetime
+    date_end:datetime
+
+@dataclass
+class Main_dto_search:  #надо ли?
+    a:str 
+
+@dataclass
+class Crud_dto:
+    a:str
 

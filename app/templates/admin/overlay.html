@@ -1,30 +1,38 @@
 {% extends 'admin/newadmin.html' %}
 
 {% block overlay %}
-
-<div class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center"
-     style="background: rgba(0,0,0,0.5); z-index: 9999;">
+<div class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 fixed-top">
     
-    <div class="bg-white p-5 shadow-lg text-center" style="width: 1000px; max-width: 90%; height: 80vh; border-radius: 8px; position: relative;">
+    <div class="bg-white p-5 shadow-lg d-flex flex-column position-relative rounded-3 w-75 h-75">
         
-        <a href="{{ url_for('admin_bp.view_data_table', table_name=current_table) }}"
-           class="text-decoration-none text-dark fs-5"
-           style="position: absolute; top: 20px; right: 30px; line-height: 1; font-size: 2rem;">&times;</a>
+        <a href="{{ url_for('admin_bp.view_data_table', table_name=current_table, q=request.args.get('q', '')) }}"
+           class="text-decoration-none text-dark position-absolute top-0 end-0 m-4 fs-1 lh-1">&times;</a>
 
-        <div class="mt-5">
+        <div class="mb-4 mt-2 text-center">
             <h3>{{ "Создание" if action == "create" else "Изменение" }}</h3>
         </div>
-        <div>
-            {% for col in columns %}
-                <p>{{col}}</p>
-                <input
-                type="text"
-                class="form-control"
-                placeholder="Введите значение...">
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">OK</button>
-        </div>
         
+        {% set target_route = 'admin_bp.create_row' if action == 'create' else 'admin_bp.update_row' %}
+        
+        <form action="{{ url_for(target_route, table_name=current_table) }}" method="POST" class="overflow-auto px-2 flex-grow-1 text-start">
+            
+            <input type="hidden" name="id" value="{{ selected_id }}">
+            <input type="hidden" name="action" value="{{ action }}">
+            <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+
+            {% for col in columns %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">{{ col }}</label>
+                <input type="text" name="{{ col }}" class="form-control" placeholder="Введите {{ col }}...">
+                
+                </div>
+            {% endfor %}
+            
+            <div class="mt-4 pb-3 text-center">
+                <button type="submit" class="btn btn-primary px-5">OK</button>
+            </div>
+            
+        </form>
     </div>
 </div>
 {% endblock %}

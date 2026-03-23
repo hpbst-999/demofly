@@ -6,8 +6,9 @@ from app.models.dto import Table_dto_request
 class AdminController:
     
     def admin_index(self):
-        tables = AdminService.entities["tables"]
-        return render_template("admin/newadmin.html", tables=tables)
+        service= AdminService()
+        tables = service.get_name_tables()
+        return render_template("admin/newadmin.html", tables=tables)  
 
     
     def view_data_table(self, table_name):
@@ -28,10 +29,9 @@ class AdminController:
         dto_request= Table_dto_request(table_name=table_name, search_query=search_query)
 
         try:
-            data_dto, columns = AdminService.get_data_tables(service, dto_request)
-            keys = AdminService.get_keys(service, dto_request)
-            tables = AdminService.get_name_tables(service)
-            data  = [obj.__dict__ for obj in data_dto]
+            data, columns = service.get_data_tables(dto_request)
+            keys = service.get_keys(dto_request=dto_request)
+            tables = service.get_name_tables()
             return render_template(template, data=data, columns = columns, tables=tables, current_table=table_name, keys = keys, selected_id = row_id, action = action)
         except Exception as e:
             print(e)
@@ -42,10 +42,10 @@ class AdminController:
         search_query = request.args.get("q", "").strip()
         row_id = request.form.get('id')
         service = AdminService()
-        dto_request= Table_dto_request(table_name=table_name, search_query=search_query, id_row=row_id)
-        AdminService.delete_record(service, dto_request)
+        dto_request= Table_dto_request(table_name=table_name, row_id=row_id)
+        service.delete_record(dto_request)
 
-        return redirect(url_for('admin_bp.search_default_data', 
+        return redirect(url_for('admin_bp.view_data_table', 
                             table_name=table_name, 
                             q=search_query))
     
@@ -55,7 +55,7 @@ class AdminController:
         row_id = request.args.get("id","").strip()
         service = AdminService()
         dto_request= Table_dto_request(table_name=table_name, search_query=search_query, id_row=row_id)
-        AdminService.update_record(service, dto_request)
+        service.update_record( dto_request)
 
         return redirect()
     
@@ -65,7 +65,7 @@ class AdminController:
         row_id = request.args.get("id","").strip()
         service = AdminService()
         dto_request= Table_dto_request(table_name=table_name, search_query=search_query, id_row=row_id)
-        AdminService.create_record(service, dto_request)
+        service.create_record( dto_request)
 
         return redirect()
     

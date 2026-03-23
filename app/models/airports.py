@@ -20,12 +20,12 @@ class AirportsDTO:
     
     @classmethod
     def convert_to_dto(cls, airport: Airports) -> 'AirportsDTO':
-        coordinates_str = f"{airport.coordinates[0]}, {airport.coordinates[1]}"
+        
         return cls(
             airport_code=str(airport.airport_code),
-            airport_name=str(airport.airport_name),
-            city=str(airport.city),
-            country=str(airport.country),
-            coordinates=coordinates_str,
+            airport_name=str(airport.airport_name.get('en', 'N/A')),
+            city=str(airport.city.get('en', 'N/A')),
+            country=str(airport.country.get('en', 'N/A')),
+            coordinates=str(airport.coordinates),
             timezone=str(airport.timezone)
         )

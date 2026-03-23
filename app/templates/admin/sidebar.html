@@ -1,9 +1,9 @@
 <div class="col-2 bg-light border-end h-100 p-0">
     <div class="list-group list-group-flush">
         {% for table in tables %}
-            <a href="{{ url_for('admin_bp.view_data_table', table_name=table.name) }}" 
-               class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == table.name }}">
-                {{ table.name }}
+            <a href="{{ url_for('admin_bp.view_data_table', table_name=table) }}" 
+               class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == table }}">
+                {{ table }}
             </a>
         {% endfor %}
     </div>
