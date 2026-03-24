@@ -29,7 +29,8 @@ class AdminController:
         dto_request= Table_dto_request(table_name=table_name, search_query=search_query)
 
         try:
-            data, columns = service.get_data_tables(dto_request)
+            data_dto , columns = service.get_data_tables(dto_request)
+            data  = [obj.__dict__ for obj in data_dto]
             keys = service.get_keys(dto_request=dto_request)
             tables = service.get_name_tables()
             return render_template(template, data=data, columns = columns, tables=tables, current_table=table_name, keys = keys, selected_id = row_id, action = action)

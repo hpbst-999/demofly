@@ -23,6 +23,6 @@ class Boarding_passesDTO:
             flight_id=str(boarding_pass.flight_id),
             seat_no=str(boarding_pass.seat_no),
             boarding_no=str(boarding_pass.boarding_no),
-            boarding_time=boarding_pass.boarding_time.isoformat()
+            boarding_time=boarding_pass.boarding_time
         )
     

@@ -28,8 +28,8 @@ class FlightsDTO:
             flight_id=str(flight.flight_id),
             route_no=str(flight.route_no),
             status=str(flight.status),
-            scheduled_departure=flight.scheduled_departure.isoformat(),
-            scheduled_arrival=flight.scheduled_arrival.isoformat(),
-            actual_departure=flight.actual_departure.isoformat() if flight.actual_departure else None,
-            actual_arrival=flight.actual_arrival.isoformat() if flight.actual_arrival else None
+            scheduled_departure=flight.scheduled_departure,
+            scheduled_arrival=flight.scheduled_arrival,
+            actual_departure=flight.actual_departure if flight.actual_departure else None,
+            actual_arrival=flight.actual_arrival if flight.actual_arrival else None
         )

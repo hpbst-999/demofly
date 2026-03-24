@@ -1,5 +1,5 @@
 <div class="col-6 border-end overflow-auto h-100 p-0">
-    {% if data %}
+    
     <table class="table table-sm table-striped table-bordered table-hover mb-0">
         <thead class="table-light sticky-top shadow-sm">
             <tr>
@@ -9,7 +9,7 @@
             </tr>
         </thead>
         <tbody>
-
+        {% if data %}
         
             {% for row in data %}
 
@@ -37,9 +37,7 @@
                 {% endfor %}
             </tr>
             {% endfor %}
+            {% endif %}
         </tbody>
     </table>
-    {% else %}
-    <div class="p-4 text-muted text-center">Выберите таблицу для просмотра данных</div>
-    {% endif %}
 </div>

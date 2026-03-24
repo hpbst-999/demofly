@@ -17,7 +17,7 @@ class BookingsDTO:
     def convert_to_dto(cls, booking: Bookings) -> 'BookingsDTO':
         return cls(
             book_ref=str(booking.book_ref),
-            book_date=booking.book_date.isoformat(),
+            book_date=booking.book_date,
             total_amount=str(booking.total_amount)
         )
     
