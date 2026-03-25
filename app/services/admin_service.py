@@ -1,6 +1,4 @@
-import psycopg2.extras
-import datetime
-import re
+
 from app.models.dto import Table_dto_request, Table_dto_search
 from app.repositories.admin_repo import get_data_tables, get_table_name, delete_record_by_id
 from app.models.airplanes import AirplanesDTO

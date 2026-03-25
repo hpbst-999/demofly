@@ -9,8 +9,12 @@ from app.models.routes import Routes
 from app.models.seats import Seats
 from app.models.segments import Segments
 from app.models.tickets import Tickets
-from app.repositories.db_pool import query_db
+from app.repositories.db_pool import query_db, db_pool
 from app.models.dto import Cud_dto
+
+# class AdminRepository:
+     
+
 def get_table_name():
     sql = """
         SELECT table_name 
