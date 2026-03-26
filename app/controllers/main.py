@@ -4,6 +4,10 @@ from app.models.dto import Main_dto_request
 from app.services.main_service import MainService
 
 class MainController:
+
+    def __init__(self, service: MainService):
+        self.service = service
+
     def main_index(self):
         return render_template('main/index.html')
     
@@ -27,8 +31,8 @@ class MainController:
 
         dto_request = Main_dto_request(from_city=from_city, to_city=to_city, date_start=date_start, date_end=date_end)
         try:
-            service = MainService()
-            tickets = service.get_tickets(dto_request)
+
+            tickets = self.service.get_tickets(dto_request)
 
             if not tickets:
                 flash("Билеты не найдены!", "warning")

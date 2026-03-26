@@ -1,6 +1,5 @@
 
 from app.models.dto import Table_dto_request, Table_dto_search
-from app.repositories.admin_repo import get_data_tables, get_table_name, delete_record_by_id
 from app.models.airplanes import AirplanesDTO
 from app.models.airports import AirportsDTO
 from app.models.boarding_passes import Boarding_passesDTO
@@ -12,6 +11,7 @@ from app.models.segments import SegmentsDTO
 from app.models.tickets import TicketsDTO
 from app.models.dto import Cud_dto
 from dataclasses import fields
+from app.repositories.admin_repo import AdminRepository
 
 class AdminService:
 
@@ -38,9 +38,11 @@ class AdminService:
     'tickets': TicketsDTO
 }
 
-    
+    def __init__(self, admin_repo: AdminRepository):
+        self.admin_repo = admin_repo
+
     def get_name_tables(self):
-        name_tables = get_table_name()
+        name_tables = self.admin_repo.get_table_name()
         return name_tables
     
 
@@ -54,20 +56,11 @@ class AdminService:
         table_name = dto_request.table_name
         search_query = dto_request.search_query
 
-        if search_query:
-
-            search_dto = Table_dto_search(table_name=table_name, search_query=search_query)
-
-            data = get_data_tables(search_dto)
-            data_dto = [self.CLASS_MAP[table_name].convert_to_dto(obj) for obj in data]
-
-        else:
-            search_dto = Table_dto_search(table_name=table_name)
-
-            data = get_data_tables(search_dto)
-            
-            data_dto = [self.CLASS_MAP[table_name].convert_to_dto(obj) for obj in data]
+        search_dto = Table_dto_search(table_name=table_name, search_query=search_query)
+        data = self.admin_repo.get_data_tables(search_dto)
+        data_dto = [self.CLASS_MAP[table_name].convert_to_dto(obj) for obj in data]
         columns = [f.name for f in fields(self.CLASS_MAP[table_name])]
+
         return data_dto, columns
 
 
@@ -81,7 +74,7 @@ class AdminService:
         values = row_id.split('|')
         data_dict = dict(zip(keys, values))
         delete_data_dto = Cud_dto(table_name=table_name, row_id=data_dict)
-        delete_record_by_id(delete_data_dto)
+        self.admin_repo.delete_record_by_id(delete_data_dto)
         return
     
 
