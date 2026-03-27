@@ -1,49 +1,37 @@
-
 from app.models.dto import Table_dto_request, Table_dto_search
 from app.models.airplanes import AirplanesDTO
 from app.models.airports import AirportsDTO
 from app.models.boarding_passes import Boarding_passesDTO
 from app.models.bookings import BookingsDTO
 from app.models.flights import FlightsDTO
-from app.models.routes import RoutesDTO
-from app.models.seats import SeatsDTO
-from app.models.segments import SegmentsDTO
-from app.models.tickets import TicketsDTO
 from app.models.dto import Cud_dto
 from dataclasses import fields
 from app.repositories.admin_repo import AdminRepository
 
 class AdminService:
 
-    TABLE_KEYS = {
-    "bookings": "book_ref",
-    "tickets": "ticket_no",
-    "flights": "flight_id",
-    "airports_data": "airport_code",
-    "airplanes_data": "airplane_code",
-    "routes": ["route_no","airplane_code"], 
-    "boarding_passes": ["ticket_no", "flight_id"],
-    "seats": ["airplane_code", "seat_no"],
-    "segments": ["flight_id", "ticket_no"]
-}
+#     TABLE_KEYS = {
+#     "bookings": "book_ref",
+#     "tickets": "ticket_no",
+#     "flights": "flight_id",
+#     "airports_data": "airport_code",
+#     "airplanes_data": "airplane_code",
+#     "routes": ["route_no","airplane_code"], 
+#     "boarding_passes": ["ticket_no", "flight_id"],
+#     "seats": ["airplane_code", "seat_no"],
+#     "segments": ["flight_id", "ticket_no"]
+# }
     CLASS_MAP = {
     'airplanes_data': AirplanesDTO,
     'airports_data': AirportsDTO,
     'boarding_passes': Boarding_passesDTO,
     'bookings': BookingsDTO,
     'flights': FlightsDTO,
-    'routes': RoutesDTO,
-    'seats': SeatsDTO,
-    'segments': SegmentsDTO,
-    'tickets': TicketsDTO
 }
 
     def __init__(self, admin_repo: AdminRepository):
         self.admin_repo = admin_repo
 
-    def get_name_tables(self):
-        name_tables = self.admin_repo.get_table_name()
-        return name_tables
     
 
     def get_keys(self, dto_request:Table_dto_request):
@@ -51,39 +39,42 @@ class AdminService:
         keys = self.TABLE_KEYS[table_name]
         return keys
 
-        
-    def get_data_tables(self, dto_request:Table_dto_request):
-        table_name = dto_request.table_name
-        search_query = dto_request.search_query
+    
+    def get_data_airports(self,dto:Table_dto_request):
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=dto.limit, offset=dto.offset)
+        data = self.admin_repo.get_airports(search_dto)
+        data_dto = [AirportsDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(AirportsDTO)]
+        return data_dto, columns
+    
+    def get_data_airplanes(self,dto:Table_dto_request):
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=dto.limit, offset=dto.offset)
+        data = self.admin_repo.get_airplanes()
+        data_dto = [AirplanesDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(AirplanesDTO)]
+        return data_dto, columns
+    
+    def get_data_flights(self, dto:Table_dto_request):
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=dto.limit, offset=dto.offset)
+        data = self.admin_repo.get_flights(search_dto)
+        data_dto = [FlightsDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(FlightsDTO)]
+        return data_dto, columns
+    
+    def get_data_bookings(self, dto:Table_dto_request):
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=dto.limit, offset=dto.offset)
+        data = self.admin_repo.get_bookings(search_dto)
+        data_dto = [BookingsDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(BookingsDTO)]
+        return data_dto, columns
 
-        search_dto = Table_dto_search(table_name=table_name, search_query=search_query)
-        data = self.admin_repo.get_data_tables(search_dto)
-        data_dto = [self.CLASS_MAP[table_name].convert_to_dto(obj) for obj in data]
-        columns = [f.name for f in fields(self.CLASS_MAP[table_name])]
-
+    def get_data_boarding_passes(self, dto:Table_dto_request):
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=dto.limit, offset=dto.offset)
+        data = self.admin_repo.get_boarding_passes(search_dto)
+        data_dto = [Boarding_passesDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(Boarding_passesDTO)]
         return data_dto, columns
 
 
-    def delete_record(self, dto_request:Table_dto_request):
-        keys = self.TABLE_KEYS[dto_request.table_name]
-        table_name = dto_request.table_name
-        row_id = dto_request.row_id
-        #проверка на айди не пустой
-        if isinstance(keys, str):
-            keys = [keys]
-        values = row_id.split('|')
-        data_dict = dict(zip(keys, values))
-        delete_data_dto = Cud_dto(table_name=table_name, row_id=data_dict)
-        self.admin_repo.delete_record_by_id(delete_data_dto)
-        return
     
 
-    def create_record(self, dto_request:Table_dto_request):
-        keys = self.TABLE_KEYS[dto_request.table_name]
-        return
-    
-
-    def update_record(self, dto_request:Table_dto_request):
-        keys = self.TABLE_KEYS[dto_request.table_name]
-        return
-    

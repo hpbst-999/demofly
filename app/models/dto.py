@@ -3,14 +3,14 @@ from typing import Optional
 from datetime import datetime
 @dataclass
 class Table_dto_request:
-    table_name: str
+    offset: int
+    limit: int
     search_query: Optional[str] = None
-    row_id: Optional[str] = None
-    full_row: Optional[str] = None
 
 @dataclass
-class Table_dto_search: #к репозиторию
-    table_name: str
+class Table_dto_search:
+    offset: int
+    limit: int
     search_query: Optional[str] = None
 
 @dataclass

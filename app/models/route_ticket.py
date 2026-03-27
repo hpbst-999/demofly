@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
-from datetime import time, timedelta
-from psycopg2.extras import DateTimeTZRange
+from typing import  Optional
 from decimal import Decimal
 from datetime import datetime
 
@@ -11,6 +9,7 @@ class RouteTicket:
     route_no: str
     scheduled_departure: datetime
     scheduled_arrival: datetime
+    departure_airport: str
     departure_city: str
     arrival_airport: str
     arrival_city: str  
@@ -22,6 +21,7 @@ class RouteTicketDTO:
     route_no: str
     scheduled_departure: str
     scheduled_arrival: str
+    departure_airport: str
     departure_city: str
     arrival_airport: str
     arrival_city: str  
@@ -34,8 +34,10 @@ class RouteTicketDTO:
             route_no=route.route_no,
             scheduled_departure=route.scheduled_departure.isoformat(),
             scheduled_arrival=route.scheduled_arrival.isoformat(),
+            departure_airport = route.departure_airport,
             departure_city=route.departure_city,
             arrival_airport=route.arrival_airport,
             arrival_city=route.arrival_city,
-            price=str(route.price) if route.price is not None else ''
+            price=str(route.price) if route.price is not None else ""
         )
+

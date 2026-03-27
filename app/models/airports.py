@@ -23,9 +23,10 @@ class AirportsDTO:
         
         return cls(
             airport_code=str(airport.airport_code),
-            airport_name=str(airport.airport_name.get('en', 'N/A')),
-            city=str(airport.city.get('en', 'N/A')),
-            country=str(airport.country.get('en', 'N/A')),
+            airport_name=str(airport.airport_name),
+            city=str(airport.city),
+            country=str(airport.country),
             coordinates=str(airport.coordinates),
             timezone=str(airport.timezone)
         )
+

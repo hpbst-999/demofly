@@ -1,3 +1,4 @@
+
 from flask import render_template, jsonify, request, redirect, url_for
 from app.services.admin_service import AdminService
 from app.models.dto import Table_dto_request
@@ -9,65 +10,81 @@ class AdminController:
     
 
     def admin_index(self):
-        tables = self.service.get_name_tables()
-        return render_template("admin/newadmin.html", tables=tables)  
+        return render_template("admin/newadmin.html")  
 
-    
-    def view_data_table(self, table_name):
-        search_query = request.args.get("q", "").strip()
+    def view_airports(self):
+        limit = request.args.get('limit', 20, type=int)    
+        offset = request.args.get('offset', 0, type=int)
+        dto_search = Table_dto_request(limit=limit, offset=offset)
         row_id = request.args.get("id","").strip()
-        action = None
-
-        if request.args.get("create"):
-            template = "admin/overlay.html"
-            action = "create"
-        elif request.args.get("update") and row_id:
-            template = "admin/overlay.html"
-            action = "update"
-        else:
-            template = "admin/newadmin.html"
-            
-        dto_request= Table_dto_request(table_name=table_name, search_query=search_query)
-
         try:
-            data_dto , columns = self.service.get_data_tables(dto_request)
+            data_dto , columns = self.service.get_data_airports(dto_search)
             data  = [obj.__dict__ for obj in data_dto]
-            keys = self.service.get_keys(dto_request=dto_request)
-            tables = self.service.get_name_tables()
-            return render_template(template, data=data, columns = columns, tables=tables, current_table=table_name, keys = keys, selected_id = row_id, action = action)
+
+            return render_template("admin/newadmin.html", data=data, columns = columns, selected_id = row_id)
         except Exception as e:
             print(e)
             return jsonify({"error": "Server error"}), 500
-    
-    
-    def delete_row(self, table_name):
-        search_query = request.args.get("q", "").strip()
-        row_id = request.form.get('id')
-        dto_request= Table_dto_request(table_name=table_name, row_id=row_id)
-        self.service.delete_record(dto_request)
-
-        return redirect(url_for('admin_bp.view_data_table', 
-                            table_name=table_name, 
-                            q=search_query))
-    
-
-    def update_row(self, table_name):
-        search_query = request.args.get("q", "").strip()
+        
+    def view_airplanes(self):
+        dto_search = Table_dto_request(limit=20, offset=0)        
         row_id = request.args.get("id","").strip()
-        dto_request= Table_dto_request(table_name=table_name, search_query=search_query, id_row=row_id)
-        self.service.update_record( dto_request)
+        try:
+            data_dto , columns = self.service.get_data_airplanes(dto_search)
+            data  = [obj.__dict__ for obj in data_dto]
 
-        return redirect()
-    
-
-    def create_row(self, table_name):
-        search_query = request.args.get("q", "").strip()
+            return render_template("admin/newadmin.html", data=data, columns = columns, selected_id = row_id)
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "Server error"}), 500
+        
+    def view_flights(self):
+        limit = request.args.get('limit', 20, type=int)    
+        offset = request.args.get('offset', 0, type=int)
         row_id = request.args.get("id","").strip()
-        dto_request= Table_dto_request(table_name=table_name, search_query=search_query, id_row=row_id)
-        self.service.create_record( dto_request)
+        dto_search = Table_dto_request(limit=limit, offset=offset)
+        try:
+            data_dto , columns = self.service.get_data_flights(dto_search)
+            data  = [obj.__dict__ for obj in data_dto]
 
-        return redirect()
+            return render_template("admin/newadmin.html", data=data, columns = columns, selected_id = row_id)
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "Server error"}), 500
+        
+    def view_bookings(self):
+        limit = request.args.get('limit', 20, type=int)    
+        offset = request.args.get('offset', 0, type=int)
+        row_id = request.args.get("id","").strip()
+        dto_search = Table_dto_request(limit=limit, offset=offset)
+        try:
+            data_dto , columns = self.service.get_data_bookings(dto_search)
+            data  = [obj.__dict__ for obj in data_dto]
+
+            return render_template("admin/newadmin.html", data=data, columns = columns, selected_id = row_id)
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "Server error"}), 500
+        
+    def view_boarding_passes(self):
+        limit = request.args.get('limit', 20, type=int)    
+        offset = request.args.get('offset', 0, type=int)
+        row_id = request.args.get("id","").strip()
+        dto_search = Table_dto_request(limit=limit, offset=offset)
+        try:
+            data_dto , columns = self.service.get_data_boarding_passes(dto_search)
+            data  = [obj.__dict__ for obj in data_dto]
+
+            return render_template("admin/newadmin.html", data=data, columns = columns, selected_id = row_id)
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "Server error"}), 500
+
+    
     
 
 
+
+
     
+

@@ -42,8 +42,8 @@ class MainRepository:
     LEFT JOIN bookings.segments s ON f.flight_id = s.flight_id
     JOIN bookings.airports_data dep ON r.departure_airport = dep.airport_code
     JOIN bookings.airports_data arr ON r.arrival_airport = arr.airport_code
-    WHERE dep.city->>'en' ILIKE %s
-    AND arr.city->>'en' ILIKE %s
+    WHERE LOWER(dep.city->>'en') = LOWER(%s)
+    AND LOWER(arr.city->>'en') = LOWER(%s)
     AND f.scheduled_departure >= %s::timestamp 
     AND f.scheduled_departure < %s::timestamp + interval '1 day'
     GROUP BY 
@@ -58,7 +58,8 @@ class MainRepository:
     ORDER BY f.scheduled_departure
     LIMIT 50;
         """
-        tickets = self.query_db(sql,(f"%{from_city}%", f"%{to_city}%", date_start, date_end)) #Убрать фстроки
+        params = [from_city,to_city,date_start,date_end]
+        tickets = self.query_db(sql,params=params)
         field_names = list(RouteTicket.__dataclass_fields__.keys())
 
         return [RouteTicket(**{field: row[field] for field in field_names}) for row in tickets]

@@ -1,6 +1,6 @@
 <div class="row p-2 border-bottom align-items-center bg-white" >
     
-<form action="{{ url_for('admin_bp.view_data_table', table_name=current_table) }}" method="GET" class="col-md-4">
+<form action="" method="GET" class="col-md-4">
     <div class="input-group">
         <input type="text" name="q" class="form-control" placeholder="Поиск в {{ current_table }}..." value="{{ request.args.get('q', '') }}">
         <button class="btn btn-outline-secondary" type="submit">Поиск</button>
@@ -10,25 +10,17 @@
     <div class="col-md-8 text-end">
     <div class="btn-group shadow-sm">
      
-        <a href="{{ url_for('admin_bp.view_data_table', 
-                            table_name=current_table, 
-                            id=selected_id, 
-                            q=request.args.get('q'),
-                            create=1) }}" 
+        <a href="" 
            class="btn btn-success">
            Создать
         </a>
 
-        <a href="{{ url_for('admin_bp.view_data_table', 
-                            table_name=current_table, 
-                            id=selected_id, 
-                            q=request.args.get('q'),
-                            update=1) }}" 
+        <a href="" 
            class="btn btn-primary">
            Изменить
         </a>
 
-        <form action="{{ url_for('admin_bp.delete_row', table_name=current_table, q=request.args.get('q')) }}" method="POST" style="display: inline;">
+        <form action="">
             <input type="hidden" name="id" value="{{ selected_id }}">
             <button type="submit" class="btn btn-danger">Удалить</button>
         </form>
@@ -36,3 +28,4 @@
 </div>
 
 </div>
+
