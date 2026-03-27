@@ -84,3 +84,59 @@ class AdminRepository:
         sql = f"DELETE FROM {table_name} WHERE {where_conditions};"
         params = list(dict_id.values())
         return self.query_db(sql, params)
+    
+# airports - 
+# select * from Airports_data
+# offset 0
+# limit 50
+
+# airplanes - 
+# select * from Airplanes_data
+# offset 0
+# limit 50
+
+# flights - 
+# select r.route_no,f.flight_id,r.validity,r.duration, 
+# f.status, f.scheduled_departure, 
+# f.scheduled_arrival, f.actual_departure, f.actual_arrival,
+# dep.airport_name as departure_airport, dep.city as departure_city, dep.country as departure_country,
+# arr.airport_name as arrival_airport, arr.city as arrival_city, arr.country as arrival_country
+# from routes r
+# join flights f on r.route_no = f.route_no
+# join airports_data dep on dep.airport_code = r.departure_airport 
+# join airports_data arr on arr.airport_code = r.arrival_airport
+# offset 0
+# limit 50
+
+# bookings - 
+# select b.book_ref,t.ticket_no, b.book_date, b.total_amount,s.fare_conditions,
+# t.passenger_id, t.passenger_name,f.flight_id, 
+# dep.airport_name as departure_airport, dep.city as departure_city, 
+# arr.airport_name as arrival_airport, arr.city as arrival_city
+# from bookings b
+# join tickets t on b.book_ref =t.book_ref 
+# join segments s on t.ticket_no = s.ticket_no 
+# join flights f on s.flight_id = f .flight_id 
+# join routes r on r.route_no = f.route_no
+# join airports_data dep on dep.airport_code = r.departure_airport 
+# join airports_data arr on arr.airport_code = r.arrival_airport
+# offset 0
+# limit 50
+
+# boarding_passes - 
+
+# select t.ticket_no, f.flight_id, b.boarding_no,b.boarding_time,b.seat_no, s.fare_conditions,
+# t.passenger_id, t.passenger_name, t.outbound, f.flight_id,f.scheduled_departure, 
+# f.scheduled_arrival,r.duration,
+# dep.airport_name as departure_airport, dep.city as departure_city, 
+# arr.airport_name as arrival_airport, arr.city as arrival_city
+# from boarding_passes b
+# join tickets t on b.ticket_no = t.ticket_no 
+# join flights f on b.flight_id =  f.flight_id
+# join segments s on s.ticket_no = t.ticket_no 
+# join routes r on r.route_no = f.route_no
+# join airports_data dep on dep.airport_code = r.departure_airport 
+# join airports_data arr on arr.airport_code = r.arrival_airport
+# offset 0
+# limit 50
+
