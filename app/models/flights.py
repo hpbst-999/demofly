@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-from datetime import time, timedelta
+from datetime import timedelta
 from psycopg2.extras import DateTimeTZRange
 
 @dataclass

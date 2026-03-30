@@ -21,11 +21,13 @@ class MainRepository:
         finally:
             self.pool.putconn(conn)
 
-    def get_tickets_from_city_to_city(self, dto_request:Main_dto_search):
-        from_city = dto_request.from_city
-        to_city = dto_request.to_city
-        date_start = dto_request.date_start
-        date_end = dto_request.date_end
+    def get_tickets_from_city_to_city(self, dto:Main_dto_search):
+        from_city = dto.from_city
+        to_city = dto.to_city
+        date_start = dto.date_start
+        date_end = dto.date_end
+        offset = dto.offset
+        limit = dto.limit
         sql = """
     SELECT
         f.flight_id,
@@ -56,9 +58,10 @@ class MainRepository:
         r.arrival_airport, 
         arr.city->>'en'
     ORDER BY f.scheduled_departure
-    LIMIT 50;
+    OFFSET %s
+    LIMIT %s;
         """
-        params = [from_city,to_city,date_start,date_end]
+        params = [from_city,to_city,date_start,date_end,offset, limit]
         tickets = self.query_db(sql,params=params)
         field_names = list(RouteTicket.__dataclass_fields__.keys())
 

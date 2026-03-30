@@ -1,5 +1,3 @@
-
-
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -15,10 +13,6 @@ class Bookings:
     passenger_name: str
     flight_id: int
     outbound: bool
-    departure_airport:str
-    departure_city:str
-    arrival_airport:str
-    arrival_city:str
 
 @dataclass
 class BookingsDTO:
@@ -31,10 +25,6 @@ class BookingsDTO:
     passenger_name: str
     flight_id: str
     outbound: str
-    departure_airport:str
-    departure_city:str
-    arrival_airport:str
-    arrival_city:str
 
     @classmethod
     def convert_to_dto(cls, booking: Bookings) -> 'BookingsDTO':
@@ -47,10 +37,6 @@ class BookingsDTO:
             passenger_id=str(booking.passenger_id),
             passenger_name=str(booking.passenger_name),
             flight_id=str(booking.flight_id),
-            outbound=str(booking.outbound),
-            departure_airport=booking.departure_airport,
-            departure_city=booking.departure_city,
-            arrival_airport=booking.arrival_airport,
-            arrival_city=booking.arrival_city
+            outbound=str(booking.outbound)
         )
 

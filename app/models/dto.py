@@ -19,6 +19,8 @@ class Main_dto_request:
     to_city:str
     date_start:datetime
     date_end:datetime
+    offset: int
+    limit: int
 
 @dataclass
 class Main_dto_search: 
@@ -26,9 +28,7 @@ class Main_dto_search:
     to_city:str
     date_start:datetime
     date_end:datetime
+    offset: int
+    limit: int
 
-@dataclass
-class Cud_dto:
-    table_name:str
-    row_id: dict
 

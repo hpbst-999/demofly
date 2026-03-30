@@ -5,9 +5,6 @@ app/__pycache__/
 app/controllers/__pycache__/
 app/models/__pycache__/
 app/routes/__pycache__/
-app/static/js/script2.js
-app/templates/admin/admin.html
 venv/
-admin_old.py
-app_old.py
-boot.txt
+
+

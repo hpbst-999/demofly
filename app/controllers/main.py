@@ -23,15 +23,15 @@ class MainController:
         to_city = request.args.get('to', '').strip()
         date_start = self.parse_date(request.args.get('date_start', '').strip())
         date_end = self.parse_date(request.args.get('date_end', date_start).strip())
+        limit = request.args.get('limit', 20, type=int)    
+        offset = request.args.get('offset', 0, type=int)        
 
         if not all([from_city, to_city, date_start, date_end]):
             flash("Заполните все поля", "danger")
             return render_template('main/index.html', tickets=[])
 
-
-        dto_request = Main_dto_request(from_city=from_city, to_city=to_city, date_start=date_start, date_end=date_end)
+        dto_request = Main_dto_request(from_city=from_city, to_city=to_city, date_start=date_start, date_end=date_end, offset=offset, limit=limit)
         try:
-
             tickets = self.service.get_tickets(dto_request)
 
             if not tickets:
