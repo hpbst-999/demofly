@@ -6,15 +6,15 @@ from psycopg2.extras import DateTimeTZRange
 
 @dataclass
 class Flights:
-    route_no: str
     flight_id: int
-    validity: DateTimeTZRange
-    duration: timedelta   
-    status: str
+    route_no: str
+    status: str  
     scheduled_departure: datetime
     scheduled_arrival: datetime
     actual_departure: Optional[datetime] 
     actual_arrival: Optional[datetime]
+    validity: DateTimeTZRange
+    duration: timedelta 
     departure_airport:str
     departure_city:str
     departure_country:str
@@ -24,15 +24,15 @@ class Flights:
 
 @dataclass
 class FlightsDTO:
-    route_no: str
     flight_id: str
-    validity: str
-    duration: str
+    route_no: str
     status: str
     scheduled_departure: str
     scheduled_arrival: str
     actual_departure: Optional[str] 
     actual_arrival: Optional[str]
+    validity: str
+    duration: str
     departure_airport:str
     departure_city:str
     departure_country:str

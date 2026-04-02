@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
 from datetime import datetime
+from typing import List, Any, Optional
 @dataclass
 class Table_dto_request:
-    offset: int
-    limit: int
+    page:int
     search_query: Optional[str] = None
 
 @dataclass
@@ -14,13 +13,18 @@ class Table_dto_search:
     search_query: Optional[str] = None
 
 @dataclass
+class Table_dto_response:
+    data: List[Any]          
+    columns: List[str]       
+    has_next: bool = False   
+
+@dataclass
 class Main_dto_request:
     from_city:str
     to_city:str
     date_start:datetime
     date_end:datetime
-    offset: int
-    limit: int
+    page:int
 
 @dataclass
 class Main_dto_search: 

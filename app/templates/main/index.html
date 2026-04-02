@@ -24,7 +24,7 @@
     
     <header class="bg-dark py-3 shadow-sm mb-4">
         <div class="container text-center">
-            <span class="h3 text-white fw-bold m-0">DemoFly</span>
+            <a href="/" class="h3 text-white fw-bold m-0 text-decoration-none">DemoFly</a>
         </div>
     </header>
 
@@ -98,6 +98,27 @@
                     </div>
                     {% endfor %}
                 </div>
+                {% if tickets %}
+                    <div class="d-flex justify-content-center align-items-center mt-4 mb-5">
+
+                        {% if current_page > 1 %}
+                            <a href="?page={{ current_page - 1 }}&from={{ request.args.get('from', '') }}&to={{ request.args.get('to', '') }}&date_start={{ request.args.get('date_start', '') }}&date_end={{ request.args.get('date_end', '') }}" 
+                            class="btn btn-outline-dark fw-bold px-4 me-2">
+                                Назад
+                            </a>
+                        {% endif %}
+
+                        <span class="btn btn-dark pe-none fw-bold px-4">{{ current_page }}</span>
+
+                        {% if has_next %}
+                            <a href="?page={{ current_page + 1 }}&from={{ request.args.get('from', '') }}&to={{ request.args.get('to', '') }}&date_start={{ request.args.get('date_start', '') }}&date_end={{ request.args.get('date_end', '') }}" 
+                            class="btn btn-outline-dark fw-bold px-4 ms-2">
+                                Вперед 
+                            </a>
+                        {% endif %}
+
+                    </div>
+                {% endif %}
 
             </div>
         </div>

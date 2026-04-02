@@ -1,29 +1,60 @@
-<div class="col-12 border-end overflow-auto h-100 p-0">
+<div class="col-12 border-end d-flex flex-column h-100 p-0">
     
-    <table class="table table-sm table-striped table-bordered table-hover mb-0">
-        <thead class="table-light sticky-top shadow-sm">
-                {% for col in columns %}
-                <th class="py-2 px-3">{{ col }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-        {% if data %}
-        
-            {% for row in data %}
-            <tr>
-                {% for col in columns %}
-                <td class="p-0">
-                    <a href="" 
-                    class="text-decoration-none text-reset d-block py-2 px-3">
-                        {{ row[col] if row[col] is not none else "" }}
-                    </a>
-                </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-            {% endif %}
-        </tbody>
-    </table>
-</div>
+    <div class="flex-grow-1 overflow-auto">
+        <table class="table table-sm table-striped table-bordered table-hover mb-0">
+            <thead class="table-light sticky-top shadow-sm">
+                <tr>
+                    {% for col in columns %}
+                    <th class="py-2 px-3">{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% if data %}
+                {% for row in data %}
+                    {% set ns = namespace(id="") %}
+                    {% for col in ([pk_columns] if pk_columns is string else pk_columns) %}
+                        {% set ns.id = ns.id ~ row[col] ~ ('' if loop.last else '-') %}
+                    {% endfor %}
+                    {% set is_active = (ns.id|string == selected_id|string) %}
+                    <tr class="{{ 'bg-primary text-white shadow' if is_active else '' }}">
+                        {% for col in columns %}
+                        <td class="p-0 border-0">
+                            <a href="?selected_id={{ ns.id }}&page={{ current_page }}&q={{ request.args.get('q', '') }}" 
+                            class="text-decoration-none d-block py-2 px-3 {{ 'text-white' if is_active else 'text-reset' }}">
+                                {{ row[col] if row[col] is not none else "" }}
+                            </a>
+                        </td>
+                        {% endfor %}
+                    </tr>
 
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center bg-light border-top py-2 flex-shrink-0">
+    
+
+    {% if current_page > 1 %}
+        <a href="?page={{ current_page - 1 }}&q={{ request.args.get('q', '') }}" class="btn btn-sm btn-outline-primary">
+            Назад
+        </a>
+    {% else %}
+        <button class="btn btn-sm btn-outline-secondary" disabled> Назад</button>
+    {% endif %}
+
+    <span class="mx-3 fw-bold"> {{ current_page }}</span>
+
+
+    {% if has_next %}
+        <a href="?page={{ current_page + 1 }}&q={{ request.args.get('q', '') }}" class="btn btn-sm btn-outline-primary">
+            Вперед
+        </a>
+    {% else %}
+        <button class="btn btn-sm btn-outline-secondary" disabled>Вперед</button>
+    {% endif %}
+
+</div>
+</div>
