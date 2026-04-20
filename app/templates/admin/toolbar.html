@@ -1,31 +1,33 @@
-<div class="row p-2 border-bottom align-items-center bg-white" >
+<div class="row p-2 border-bottom align-items-center bg-white">
     
-<form action="" method="GET" class="col-md-4">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Поиск в {{ current_table }}..." value="{{ request.args.get('q', '') }}">
-        <button class="btn btn-outline-secondary" type="submit">Поиск</button>
-    </div>
-</form>
+    <form action="{{ request.path }}" method="GET" class="col-md-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ request.args.get('q', '') }}">
+            <input type="hidden" name="page" value="1">
+            <button class="btn btn-outline-secondary" type="submit">Поиск</button>
+        </div>
+    </form>
 
     <div class="col-md-8 text-end">
-    <div class="btn-group shadow-sm">
-     
-        <a href="" 
-           class="btn btn-success">
-           Создать
-        </a>
+        <div class="btn-group shadow-sm">
+         
+            <a href="{{ request.path.rstrip('/') }}/create?page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}" 
+               class="btn btn-success">
+               Создать
+            </a>
 
-        <a href="" 
-           class="btn btn-primary">
-           Изменить
-        </a>
+            <a href="{{ request.path.rstrip('/') }}/update?selected_id={{ selected_id }}&page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}" 
+               class="btn btn-primary">
+               Изменить
+            </a>
 
-        <form action="">
-            <input type="hidden" name="id" value="{{ selected_id }}">
-            <button type="submit" class="btn btn-danger">Удалить</button>
-        </form>
+            <form action="{{ request.path.rstrip('/') }}/delete" method="POST">
+                <input type="hidden" name="selected_id" value="{{ selected_id }}">
+                <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+                <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+            
+        </div>
     </div>
 </div>
-
-</div>
-

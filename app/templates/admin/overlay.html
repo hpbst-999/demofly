@@ -1,38 +1,30 @@
-{% extends 'admin/newadmin.html' %}
+{% extends 'admin/newadmin.html' %} 
 
 {% block overlay %}
-<div class="position-fixed top-0 start-0 w-100 vh-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 fixed-top">
-    
-    <div class="bg-white p-5 shadow-lg d-flex flex-column position-relative rounded-3 w-75 h-75">
-        
-        <a href="{{ url_for('admin_bp.view_data_table', table_name=current_table, q=request.args.get('q', '')) }}"
-           class="text-decoration-none text-dark position-absolute top-0 end-0 m-4 fs-1 lh-1">&times;</a>
+<div class="modal-backdrop fade show"></div>
 
-        <div class="mb-4 mt-2 text-center">
-            <h3>{{ "Создание" if action == "create" else "Изменение" }}</h3>
-        </div>
-        
-        {% set target_route = 'admin_bp.create_row' if action == 'create' else 'admin_bp.update_row' %}
-        
-        <form action="{{ url_for(target_route, table_name=current_table) }}" method="POST" class="overflow-auto px-2 flex-grow-1 text-start">
+<div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             
-            <input type="hidden" name="id" value="{{ selected_id }}">
-            <input type="hidden" name="action" value="{{ action }}">
-            <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                 <a href="/admin/{{ request.path.split('/')[2] }}/?q={{ request.args.get('q', '') }}&page={{ request.args.get('page', '1') }}" 
+                    class="btn-close"></a>
+            </div>
 
-            {% for col in columns %}
-            <div class="mb-3">
-                <label class="form-label fw-bold">{{ col }}</label>
-                <input type="text" name="{{ col }}" class="form-control" placeholder="Введите {{ col }}...">
-                
+            <div class="modal-body px-4 px-md-5 pb-5 pt-0">
+                <div class="text-center mb-1">
+                    <h2 class="fw-bold mb-0">
+                        {{ "Изменение" if 'update' in request.path else "Создание" }}
+                    </h2>
                 </div>
-            {% endfor %}
-            
-            <div class="mt-4 pb-3 text-center">
-                <button type="submit" class="btn btn-primary px-5">OK</button>
+                
+                <div class="mt-2">
+                    {% include 'admin/forms/' + request.path.split('/')[2] + '.html' %}
+                </div>
             </div>
             
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

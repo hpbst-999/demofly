@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoFly — Вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <div class="position-fixed bottom-0 end-0 p-3 z-3" style="max-width: 350px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <header class="bg-dark py-3 shadow-sm">
+        <div class="container text-center">
+            <a href="/" class="h3 text-white fw-bold m-0 text-decoration-none">DemoFly</a>
+        </div>
+    </header>
+
+    <div class="container my-auto py-3">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6"> 
+                
+                <div class="card border-0 shadow-sm p-4 rounded-4">
+                    <div class="text-center mb-2">
+                        <h4 class="fw-bold m-0">Вход</h4>
+                        <p class="text-muted small">Введите логин и пароль для доступа</p>
+                    </div>
+
+                    <form action="/login" method="POST">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small mb-1">Имя пользователя</label>
+                            <input type="text" name="username" class="form-control py-2" placeholder="Ваш логин" required autofocus>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small mb-1">Пароль</label>
+                            <input type="password" name="password" class="form-control py-2" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-dark w-100 fw-bold py-2 rounded-3 shadow-sm">
+                            Войти
+                        </button>
+                    </form>
+
+
+            </div> </div> </div>
+     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

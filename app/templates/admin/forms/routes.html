@@ -1,0 +1,91 @@
+<form action="{{ request.full_path }}" method="POST">
+    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+    <input type="hidden" name="selected_id" value="{{ item.route_no if item else '' }}">
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Номер маршрута</label>
+            <input type="text" name="route_no" class="form-control"
+                   value="{{ item.route_no if item else '' }}" required 
+                   placeholder="Напр: PG0001" {% if item %}readonly{% endif %}>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Код самолета</label>
+            <input type="text" name="airplane_code" class="form-control"
+                   value="{{ item.airplane_code if item else '' }}" required 
+                   maxlength="3" placeholder="Напр: 32N">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Аэропорт вылета</label>
+            <input type="text" name="departure_airport" class="form-control"
+                   value="{{ item.departure_airport if item else '' }}" required 
+                   maxlength="3" placeholder="SVO">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Аэропорт прибытия</label>
+            <input type="text" name="arrival_airport" class="form-control"
+                   value="{{ item.arrival_airport if item else '' }}" required 
+                   maxlength="3" placeholder="AER">
+        </div>
+    </div>
+
+    <hr class="my-4 text-secondary">
+
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Расписание и длительность</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Время вылета (местное)</label>
+            <input type="time" name="scheduled_time" class="form-control"
+                   value="{{ item.scheduled_time if item else '' }}" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Длительность полета</label>
+            <input type="text" name="duration" class="form-control"
+                   value="{{ item.duration if item else '' }}" required 
+                   placeholder="02:30:00">
+            <small class="text-muted">Формат: HH:MM:SS (интервал)</small>
+        </div>
+    </div>
+
+    <div class="mb-3">
+    <label for="days_of_week" class="form-label fw-bold">Дни недели</label>
+    <input type="text" 
+           name="days_of_week" 
+           class="form-control" 
+           value="{{ item.days_of_week if item else '' }}" 
+           placeholder="Введите текст..." 
+           required>
+    </div>
+
+    <hr class="my-4 text-secondary">
+
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Период действия (Validity)</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Начало действия</label>
+            <input type="date" name="validity_start" class="form-control"
+                   value="{{ item.validity_start if item else '' }}" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Конец действия</label>
+            <input type="date" name="validity_end" class="form-control"
+                   value="{{ item.validity_end if item else '' }}" required>
+        </div>
+    </div>
+
+    <div class="mt-4 pt-2 text-center">
+        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+            Сохранить
+        </button>
+    </div>
+</form>

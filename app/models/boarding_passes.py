@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
-    
+from typing import Optional
 @dataclass
 class Boarding_passes:
     ticket_no: str
     boarding_no: int
     boarding_time: datetime
     seat_no: str
-    fare_conditions: str 
-    passenger_id: str
-    passenger_name: str
     flight_id: int
-    outbound: bool
+    fare_conditions: Optional[str] = None
+    passenger_id: Optional[str] = None
+    passenger_name: Optional[str] = None
+    outbound: Optional[bool] = True
 
 @dataclass
 class Boarding_passesDTO:
@@ -19,11 +19,11 @@ class Boarding_passesDTO:
     boarding_no: str
     boarding_time: str
     seat_no: str
-    fare_conditions: str 
-    passenger_id: str
-    passenger_name: str
     flight_id: str
-    outbound: str
+    fare_conditions: Optional[str] = None
+    passenger_id: Optional[str] = None
+    passenger_name: Optional[str] = None
+    outbound: Optional[str] = None
 
 
     @classmethod

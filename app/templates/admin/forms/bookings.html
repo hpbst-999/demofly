@@ -1,0 +1,101 @@
+<form action="{{ request.full_path }}" method="POST">
+    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+    <input type="hidden" name="selected_id" value="{{ item.book_ref if item else '' }}">
+
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Данные бронирования</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Номер брони</label>
+            <input type="text" name="book_ref" class="form-control" 
+                   placeholder="Напр: 0A1B2C" maxlength="6"
+                   value="{{ item.book_ref if item else '' }}" required 
+                   {% if item %}readonly{% endif %}>
+            <small class="text-muted">6 символов (буквы/цифры)</small>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Дата бронирования</label>
+            <input type="datetime-local" name="book_date" class="form-control"
+                   value="{{ item.book_date if item else '' }}" required>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Сумма</label>
+            <div class="input-group">
+                <input type="number" step="0.01" name="total_amount" class="form-control"
+                       value="{{ item.total_amount if item else '' }}" required>
+                <span class="input-group-text">₽</span>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4 text-secondary">
+
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Информация о пассажире</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Номер билета</label>
+            <input type="text" name="ticket_no" class="form-control"
+                   value="{{ item.ticket_no if item else '' }}" required>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">ID Пассажира</label>
+            <input type="text" name="passenger_id" class="form-control"
+                   placeholder="Напр: 1234 567890"
+                   value="{{ item.passenger_id if item else '' }}" required>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">ФИО Пассажира</label>
+        <input type="text" name="passenger_name" class="form-control"
+               placeholder="IVAN IVANOV"
+               value="{{ item.passenger_name if item else '' }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Тип рейса</label>
+        <select name="outbound" class="form-select" required>
+            <option value="true" {% if item and item.outbound %}selected{% endif %}>Прямой</option>
+            <option value="false" {% if item and not item.outbound %}selected{% endif %}>Обратный/Транзит</option>
+        </select>
+    </div>
+
+    <hr class="my-4 text-secondary">
+
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Детали перелета</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">ID Рейса</label>
+            <input type="text" name="flight_id" class="form-control"
+                   value="{{ item.flight_id if item else '' }}" required>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Класс обслуживания</label>
+            <select name="fare_conditions" class="form-select" required>
+                <option value="">Выберите класс...</option>
+                <option value="Economy" {% if item and item.fare_conditions == 'Economy' %}selected{% endif %}>Economy</option>
+                <option value="Comfort" {% if item and item.fare_conditions == 'Comfort' %}selected{% endif %}>Comfort</option>
+                <option value="Business" {% if item and item.fare_conditions == 'Business' %}selected{% endif %}>Business</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-4 pt-2 text-center">
+        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+            Сохранить
+        </button>
+    </div>
+</form>

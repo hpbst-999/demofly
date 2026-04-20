@@ -14,9 +14,9 @@
                 {% for row in data %}
                     {% set ns = namespace(id="") %}
                     {% for col in ([pk_columns] if pk_columns is string else pk_columns) %}
-                        {% set ns.id = ns.id ~ row[col] ~ ('' if loop.last else '-') %}
+                        {% set ns.id = ns.id ~ row[col] ~ ('' if loop.last else '|') %}
                     {% endfor %}
-                    {% set is_active = (ns.id|string == selected_id|string) %}
+                    {% set is_active = (ns.id|string == selected_id|string|replace(' ', '+')) %}
                     <tr class="{{ 'bg-primary text-white shadow' if is_active else '' }}">
                         {% for col in columns %}
                         <td class="p-0 border-0">

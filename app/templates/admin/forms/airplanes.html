@@ -1,0 +1,37 @@
+<form action="{{ request.full_path }}" method="POST">
+    
+   
+    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+    <input type="hidden" name="selected_id" value="{{ request.args.get('q', '') }}">
+
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Код самолета (3 буквы)</label>
+        <input type="text" name="airplane_code" class="form-control" 
+               value="{{ item.airplane_code if item else '' }}" 
+               {% if item %}readonly{% endif %} required maxlength="3">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Модель самолета</label>
+        <input type="text" name="model" class="form-control" 
+               value="{{ item.model if item else '' }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Дальность полета</label>
+        <input type="text" name="range" class="form-control" 
+               value="{{ item.range if item else '' }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Скорость</label>
+        <input type="text" name="speed" class="form-control" 
+               value="{{ item.speed if item else '' }}" required>
+    </div>
+    
+    <div class="mt-4 pt-2 text-center">
+        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3">Сохранить</button>
+    </div>
+</form>

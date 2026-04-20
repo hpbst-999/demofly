@@ -4,8 +4,12 @@ from app.models.airports import AirportsDTO
 from app.models.boarding_passes import Boarding_passesDTO
 from app.models.bookings import BookingsDTO
 from app.models.flights import FlightsDTO
+from app.models.routes import RoutesDTO
 from dataclasses import fields
 from app.repositories.admin_repo import AdminRepository
+import re
+from flask import flash
+from datetime import datetime
 
 class AdminService:
 
@@ -13,13 +17,23 @@ class AdminService:
     "airports": "airport_code",
     "airplanes": "airplane_code",
     "bookings": ["book_ref", "ticket_no","flight_id"],
-    "flights": ["flight_id", "route_no"],
-    "boarding_passes": ["ticket_no", "boarding_no","flight_id"]
+    "flights": "flight_id",
+    "boarding_passes": ["ticket_no","flight_id"],
+    "routes":["route_no","validity"]
+
 }
 
     def __init__(self, admin_repo: AdminRepository):
         self.admin_repo = admin_repo
 
+    def parse_datetime(self, value):
+        if not value:
+            return None
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+        
     def get_pagination_params(self, page: int, page_size: int = 20):
         if not page or page < 1:
             page = 1
@@ -32,6 +46,7 @@ class AdminService:
         keys = self.TABLE_KEYS[table_name]
         return keys
     
+
     def get_data_airports(self,dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
         search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
@@ -45,6 +60,33 @@ class AdminService:
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
     
+    def create_data_airport(self, dto:AirportsDTO):
+        if len(dto.airport_code) != 3 or not dto.airport_code.isalpha():
+            flash("Код аэропорта должен состоять ровно из 3 БУКВ!", "warning")
+        elif not re.match(r'^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$', dto.coordinates):
+            flash("Координаты должны быть в формате (lat,long)", "warning")
+        else:
+            self.admin_repo.create_airport(dto=dto)
+
+    def delete_data_airport(self,id):
+        if len(id) != 3 or not id.isalpha():
+            flash("Неверный код аэропорта", "warning")
+        self.admin_repo.delete_airport(id=id)
+
+    def update_data_airport(self, dto:AirportsDTO):
+        if len(dto.airport_code) != 3 or not dto.airport_code.isalpha():
+            flash("Код аэропорта должен состоять ровно из 3 БУКВ!", "warning")
+        elif not re.match(r'^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$', dto.coordinates):
+            flash("Координаты должны быть в формате (lat,long)", "warning")
+        else:
+            self.admin_repo.update_airport(dto=dto)
+
+    def get_data_airport_by_id(self, id):
+        airport = self.admin_repo.get_airport_by_id(id=id)
+        airport_dto = AirportsDTO.convert_to_dto(airport)
+        return airport_dto
+
+
     def get_data_airplanes(self,dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
         search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
@@ -57,7 +99,39 @@ class AdminService:
         columns = [f.name for f in fields(AirplanesDTO)]
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
+
+    def create_data_airplane(self, dto:AirplanesDTO):
+        if len(dto.airplane_code) != 3 :
+            flash("Код самолета должен состоять ровно из 3 БУКВ!", "warning")
+        elif not dto.range.isdigit():
+            flash("Дальность должна быть целым положительным числом!", "warning")
+        elif not dto.speed.isdigit():
+            flash("Скорость должна быть целым положительным числом!", "warning")
+        else:
+            self.admin_repo.create_airplane(dto=dto)
+
+    def delete_data_airplane(self,id):
+        if len(id) != 3 :
+            flash("Неверный код самолета", "warning")
+        else:
+            self.admin_repo.delete_airplane(id=id)
+
+    def update_data_airplane(self, dto:AirplanesDTO):
+        if len(dto.airplane_code) != 3:
+            flash("Код самолета должен состоять ровно из 3 БУКВ!", "warning")
+        elif not dto.range.isdigit():
+            flash("Дальность должна быть целым положительным числом!", "warning")
+        elif not dto.speed.isdigit():
+            flash("Скорость должна быть целым положительным числом!", "warning")
+        else:
+            self.admin_repo.update_airplane(dto=dto)
+
+    def get_data_airplane_by_id(self, id):
+        airplane = self.admin_repo.get_airplane_by_id(id=id)
+        airplane_dto = AirplanesDTO.convert_to_dto(airplane)
+        return airplane_dto
     
+
     def get_data_flights(self, dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
         search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
@@ -71,6 +145,54 @@ class AdminService:
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
     
+    def create_data_flight(self, dto:FlightsDTO):
+        scheduled_departure_dt = self.parse_datetime(dto.scheduled_departure)
+        scheduled_arrival_dt = self.parse_datetime(dto.scheduled_arrival)
+        actual_departure_dt = self.parse_datetime(dto.actual_departure)
+        actual_arrival_dt = self.parse_datetime(dto.actual_arrival)
+        if len(dto.route_no) != 6:
+            flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
+        elif not (scheduled_departure_dt and scheduled_arrival_dt):
+            flash("Укажите корректные даты планового вылета и прилета!", "warning")
+        elif scheduled_departure_dt >= scheduled_arrival_dt:
+            flash("Плановое время вылета не может быть позже или равно времени прилета!", "warning")
+        elif actual_departure_dt and actual_arrival_dt and actual_departure_dt >= actual_arrival_dt:
+            flash("Фактическое время вылета не может быть позже времени прилета!", "warning")
+        else:
+            self.admin_repo.create_flight(dto=dto)
+        
+    def delete_data_flight(self,id):
+        if not id.isdigit():
+            flash("Неверный код рейса", "warning")
+        else:
+            self.admin_repo.delete_flight(id=id)
+
+    def update_data_flight(self, dto:FlightsDTO):
+        scheduled_departure_dt = self.parse_datetime(dto.scheduled_departure)
+        scheduled_arrival_dt = self.parse_datetime(dto.scheduled_arrival)
+        actual_departure_dt = self.parse_datetime(dto.actual_departure)
+        actual_arrival_dt = self.parse_datetime(dto.actual_arrival)
+        if len(dto.route_no) != 6:
+            flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
+        elif not (scheduled_departure_dt and scheduled_arrival_dt):
+            flash("Укажите корректные даты планового вылета и прилета!", "warning")
+        elif scheduled_departure_dt >= scheduled_arrival_dt:
+            flash("Плановое время вылета не может быть позже или равно времени прилета!", "warning")
+        elif actual_departure_dt and actual_arrival_dt and actual_departure_dt >= actual_arrival_dt:
+            flash("Фактическое время вылета не может быть позже времени прилета!", "warning")
+        else:
+            self.admin_repo.update_flight(dto=dto)
+
+    def get_data_flight_by_id(self, id):
+        flight = self.admin_repo.get_flight_by_id(id=id)
+        flight_dto = FlightsDTO.convert_to_dto(flight)
+        flight_dto.scheduled_departure = flight.scheduled_departure.strftime('%Y-%m-%dT%H:%M')
+        flight_dto.scheduled_arrival = flight.scheduled_arrival.strftime('%Y-%m-%dT%H:%M')
+        flight_dto.actual_departure = flight.actual_departure.strftime('%Y-%m-%dT%H:%M')
+        flight_dto.actual_arrival = flight.actual_arrival.strftime('%Y-%m-%dT%H:%M')
+        return flight_dto
+
+
     def get_data_bookings(self, dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
         search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
@@ -83,6 +205,66 @@ class AdminService:
         columns = [f.name for f in fields(BookingsDTO)]
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
+
+    def create_data_booking(self, dto:BookingsDTO):
+        book_date_dt = self.parse_datetime(dto.book_date)
+        name_parts = dto.passenger_name.strip().split()
+
+        if len(dto.book_ref) != 6:
+            flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
+        elif len(dto.ticket_no) != 13:
+            flash("Введите корректный номер билета!", "warning")
+        elif float(dto.total_amount) < 0:
+            flash("Сумма бронирования не может быть отрицательная!", "warning")
+        elif len(name_parts) != 2:
+            flash("Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
+        elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', dto.passenger_id.strip()):
+            flash("ID пассажира должен быть в формате: AB 1234567890123", "warning")
+        elif not (book_date_dt):
+            flash("Укажите корректную дату", "warning")
+        elif not dto.flight_id.isdigit():
+            flash("Неверный код рейса", "warning")
+        else:
+            self.admin_repo.create_booking(dto=dto)
+
+    def delete_data_booking(self, id):
+        book_ref, ticket_no,flight_id = id.split('|')
+        if len(book_ref) != 6:
+            flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
+        elif len(ticket_no) != 13:
+            flash("Введите корректный номер билета!", "warning")
+        if not flight_id.isdigit():
+            flash("Неверный код рейса", "warning")
+        else:
+            self.admin_repo.delete_booking(book_ref=book_ref, ticket_no=ticket_no, flight_id=flight_id)
+
+    def update_data_booking(self, dto:BookingsDTO):
+        book_date_dt = dto.book_date
+        name_parts = dto.passenger_name.strip().split()
+        if len(dto.book_ref) != 6:
+            flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
+        elif len(dto.ticket_no) != 13:
+            flash("Введите корректный номер билета!", "warning")
+        elif float(dto.total_amount) < 0:
+            flash("Сумма бронирования не может быть отрицательная!", "warning")
+        elif len(name_parts) != 2:
+            flash("Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
+        elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', dto.passenger_id.strip()):
+            flash("ID пассажира должен быть в формате: AB 1234567890123", "warning")
+        elif not (book_date_dt):
+            flash("Укажите корректную дату", "warning")
+        elif not dto.flight_id.isdigit():
+            flash("Неверный код рейса", "warning")
+        else:
+            self.admin_repo.update_booking(dto=dto)
+
+    def get_data_booking_by_id(self, id):
+        book_ref, ticket_no,flight_id = id.split('|')
+        booking = self.admin_repo.get_booking_by_id(book_ref=book_ref, ticket_no=ticket_no, flight_id=flight_id)
+        booking_dto = BookingsDTO.convert_to_dto(booking)
+        booking_dto.book_date = booking.book_date.strftime('%Y-%m-%dT%H:%M')
+        return booking_dto
+    
 
     def get_data_boarding_passes(self, dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
@@ -97,6 +279,79 @@ class AdminService:
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
 
+    def create_data_boarding_pass(self, dto:Boarding_passesDTO):
+        boarding_time_dt = self.parse_datetime(dto.boarding_time)
+        if len(dto.ticket_no) != 13:
+            flash("Номер билета должен состоять ровно из 13 символов!", "warning")
+        elif not dto.flight_id.isdigit():
+            flash("Идентификатор рейса (ID) число", "warning")
+        elif dto.boarding_no and int(dto.boarding_no) <= 0:
+            flash("Номер посадки должен быть числом!", "warning")
+        elif not boarding_time_dt:
+            flash("Укажите корректное время и дату посадки!", "warning")
+        else:
+            self.admin_repo.create_boarding_pass(dto=dto)
 
+    def delete_data_boarding_pass(self, id):
+        ticket_no, flight_id = id.split('|')
+        if len(ticket_no) != 13:
+            flash("Номер билета должен состоять ровно из 13 символов!", "warning")
+        elif not flight_id.isdigit():
+            flash("Идентификатор рейса (ID) число", "warning")
+        else:
+            self.admin_repo.delete_boarding_pass(ticket_no=ticket_no, flight_id=flight_id)
+
+    def update_data_boarding_pass(self, dto:Boarding_passesDTO):
+        boarding_time_dt = self.parse_datetime(dto.boarding_time)
+        if len(dto.ticket_no) != 13:
+            flash("Номер билета должен состоять ровно из 13 символов!", "warning")
+        elif not dto.flight_id.isdigit():
+            flash("Идентификатор рейса (ID) число", "warning")
+        elif dto.boarding_no and int(dto.boarding_no) <= 0:
+            flash("Номер посадки должен быть числом!", "warning")
+        elif not boarding_time_dt:
+            flash("Укажите корректное время и дату посадки!", "warning")
+        else:
+            self.admin_repo.update_boarding_pass(dto=dto)
+
+    def get_data_boarding_pass_by_id(self, id):
+        ticket_no, flight_id = id.split('|')
+        boarding_pass = self.admin_repo.get_boarding_pass_by_id(ticket_no=ticket_no, flight_id=flight_id)
+        boarding_pass_dto = Boarding_passesDTO.convert_to_dto(boarding_pass)
+        boarding_pass_dto.boarding_time = boarding_pass.boarding_time.strftime('%Y-%m-%dT%H:%M')
+        return boarding_pass_dto
     
+    def get_data_routes(self, dto:Table_dto_request):
+        limit, offset = self.get_pagination_params(dto.page, page_size=20)
+        search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
+        if dto.search_query:
+            data = self.admin_repo.get_filter_routes(search_dto)
+        else:
+            data = self.admin_repo.get_routes(search_dto)
+        has_next = len(data) > limit-1
+        data_dto = [RoutesDTO.convert_to_dto(obj) for obj in data]
+        columns = [f.name for f in fields(RoutesDTO)]
+        dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
+        return dto_response
+    
+    def create_data_routes(self, dto:RoutesDTO):
+        if len(dto.departure_airport) != 3 or not dto.departure_airport.isalpha():
+            flash("Код аэропорта вылета должен состоять ровно из 3 БУКВ!", "warning")
+        elif len(dto.arrival_airport) != 3 or not dto.arrival_airport.isalpha():
+            flash("Код аэропорта прибытия должен состоять ровно из 3 БУКВ!", "warning")
+        elif len(dto.airplane_code) != 3:
+            flash("Код самолета должен состоять из 3 символов!", "warning")
+        elif not re.match(r'^\d{2,3}:\d{2}:\d{2}$', dto.duration):
+            flash("Длительность должна быть в формате HH:MM:SS (напр. 02:30:00)", "warning")
+        elif len(dto.route_no) != 6:
+            flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
+        else:
+            self.admin_repo.create_routes(dto)
 
+    def delete_data_routes(self, id):
+        route_no,validity = id.split('|')
+        validity = validity.replace(' ', '+')
+        if len(route_no) != 6:
+            flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
+        self.admin_repo.delete_routes(route_no=route_no, validity=validity)
+    

@@ -1,25 +1,28 @@
 <div class="col-2 bg-light border-end h-100 p-0">
     <div class="list-group list-group-flush">
         <a href="{{ url_for('admin_bp.view_airports') }}" 
-           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == 'airports' }}">
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_airports' }}">
             Airports
         </a>
         <a href="{{ url_for('admin_bp.view_airplanes') }}" 
-           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == 'airplanes' }}">
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_airplanes' }}">
             Airplanes
         </a>
         <a href="{{ url_for('admin_bp.view_flights') }}" 
-           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == 'flights' }}">
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_flights' }}">
             Flights
         </a>
-        <a href="{{ url_for('admin_bp.view_bookings') }}" 
-           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == 'bookings' }}">
+        <a href="{{ url_for('admin_bp.view_routes') }}" 
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_routes' }}">
+            Routes
+        </a>
+        <a href="{{ url_for('admin_bp.view_bookings') }}"
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_bookings' }}">
             Bookings
         </a>
         <a href="{{ url_for('admin_bp.view_boarding_passes') }}" 
-           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if current_table == 'boarding_passes' }}">
+           class="list-group-item list-group-item-action border-0 py-2 px-3 {{ 'active' if request.endpoint == 'admin_bp.view_boarding_passes' }}">
             Boarding Passes
         </a>
     </div>
 </div>
-

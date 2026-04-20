@@ -1,0 +1,66 @@
+<div class="modal-backdrop fade show"></div>
+
+<div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                 <a href="/tickets?from={{ request.args.get('from', '') }}&to={{ request.args.get('to', '') }}&date_start={{ request.args.get('date_start', '') }}&date_end={{ request.args.get('date_end', '') }}&page={{ request.args.get('page', '1') }}" class="btn-close" aria-label="Close"></a>
+            </div>
+
+            <div class="modal-body px-4 px-md-5 pb-5 pt-0">
+                
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold mb-0">{{ ticket.departure_city }} — {{ ticket.arrival_city }}</h2>
+                    <p class="text-muted mt-2">
+                        Маршрут {{ ticket.route_no }} • Самолет: <span class="fw-semibold">{{ ticket.model }}</span>
+                    </p>
+                    <p class="text-muted small mt-0">
+                         ID рейса: <span class="fw-semibold text-muted">{{ ticket.flight_id }}</span>
+                    </p>
+                </div>
+                
+                <div class="bg-light rounded-4 p-4 p-md-5 border mb-4">
+                    <div class="row align-items-center text-center">
+                        
+                        <div class="col-4">
+                            <h1 class="fw-bold display-6 mb-0">{{ ticket.scheduled_departure[11:16] }}</h1>
+                            <p class="text-muted small mb-1">{{ ticket.scheduled_departure[:10] }}</p>
+                            
+                            <h4 class="fw-bold text-dark mt-4 mb-0">{{ ticket.departure_airport }}</h4>
+                            <div class="text-secondary text-truncate mt-1">{{ ticket.departure_city }}</div>
+                            <small class="text-muted">{{ ticket.departure_country }}</small>
+                        </div>
+
+                        <div class="col-4 px-0">
+                            <small class="text-muted d-block mb-2">В пути: {{ ticket.duration }}</small>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="flex-grow-1 border-bottom border-2"></div>
+                                <div class="flex-grow-1 border-bottom border-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <h1 class="fw-bold display-6 mb-0">{{ ticket.scheduled_arrival[11:16] }}</h1>
+                            <p class="text-muted small mb-1">{{ ticket.scheduled_arrival[:10] }}</p>
+                            
+                            <h4 class="fw-bold text-dark mt-4 mb-0">{{ ticket.arrival_airport }}</h4>
+                            <div class="text-secondary text-truncate mt-1">{{ ticket.arrival_city }}</div>
+                            <small class="text-muted">{{ ticket.arrival_country }}</small>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mt-4">
+                    <div class="mb-4 mb-md-0 text-center text-md-start">
+                        <small class="text-muted text-uppercase fw-bold letter-spacing-1">Cтоимость</small>
+                        <h1 class="fw-bold text-primary mb-0 mt-1">{{ ticket.price | float | int }} ₽</h1>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+    </div>
+</div>

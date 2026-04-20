@@ -9,16 +9,34 @@
 
 <body class="vh-100 d-flex flex-column overflow-hidden bg-light">
 
-    <header class="bg-dark shadow-sm flex-shrink-0">
-        <div class="container-fluid text-center text-white fw-bold p-2">
+    <header class="bg-dark shadow-sm flex-shrink-0 d-flex justify-content-center align-items-center position-relative px-3 py-2">
+        
+        <div class="text-white fw-bold">
             Admin panel
         </div>
+        <div class="position-absolute end-0 pe-3">
+            <a href="/logout" class="text-secondary small text-decoration-none">Выйти</a>
+        </div>
+
     </header>
 
     <div class="container-fluid flex-grow-1 overflow-hidden">
         <div class="row h-100 g-0">
             {% block layout %}{% endblock %}
         </div>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3 z-3" style="max-width: 350px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
     </div>
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
