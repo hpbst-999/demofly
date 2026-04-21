@@ -74,12 +74,12 @@
         <div class="col-md-6 mb-3">
             <label class="form-label fw-bold">Начало действия</label>
             <input type="date" name="validity_start" class="form-control"
-                   value="{{ item.validity_start if item else '' }}" required>
+                   value="{{ item.v_start if item else '' }}" required {% if item %}readonly{% endif %}>
         </div>
         <div class="col-md-6 mb-3">
             <label class="form-label fw-bold">Конец действия</label>
             <input type="date" name="validity_end" class="form-control"
-                   value="{{ item.validity_end if item else '' }}" required>
+                   value="{{ item.v_end if item else '' }}" required {% if item %}readonly{% endif %}>
         </div>
     </div>
 

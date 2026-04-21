@@ -335,6 +335,8 @@ class AdminService:
         return dto_response
     
     def create_data_routes(self, dto:RoutesDTO):
+        dto.days_of_week = "{" + dto.days_of_week + "}"
+        dto.validity =  f"[{dto.v_start}, {dto.v_end})"
         if len(dto.departure_airport) != 3 or not dto.departure_airport.isalpha():
             flash("Код аэропорта вылета должен состоять ровно из 3 БУКВ!", "warning")
         elif len(dto.arrival_airport) != 3 or not dto.arrival_airport.isalpha():
@@ -355,3 +357,30 @@ class AdminService:
             flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
         self.admin_repo.delete_routes(route_no=route_no, validity=validity)
     
+    def update_data_routes(self, dto:RoutesDTO):
+        dto.days_of_week = "{" + dto.days_of_week + "}"
+        dto.validity =  f"[{dto.v_start}, {dto.v_end})"
+        if len(dto.departure_airport) != 3 or not dto.departure_airport.isalpha():
+            flash("Код аэропорта вылета должен состоять ровно из 3 БУКВ!", "warning")
+        elif len(dto.arrival_airport) != 3 or not dto.arrival_airport.isalpha():
+            flash("Код аэропорта прибытия должен состоять ровно из 3 БУКВ!", "warning")
+        elif len(dto.airplane_code) != 3:
+            flash("Код самолета должен состоять из 3 символов!", "warning")
+        elif not re.match(r'^\d{2,3}:\d{2}:\d{2}$', dto.duration):
+            flash("Длительность должна быть в формате HH:MM:SS (напр. 02:30:00)", "warning")
+        elif len(dto.route_no) != 6:
+            flash("Номер маршрута должен состоять ровно из 6 символов!", "warning")
+        else:
+            self.admin_repo.update_routes(dto)
+            
+    def get_data_route_by_id(self, id):
+        route_no,validity = id.split('|')
+        validity = validity.replace(' ', '+')
+        route = self.admin_repo.get_route_by_id(route_no, validity)
+        route_dto = RoutesDTO.convert_to_dto(route)
+        v_start,v_end = route_dto.validity[1:-1].split(',')
+        v_start_obj = datetime.fromisoformat(v_start)
+        v_end_obj = datetime.fromisoformat(v_end)
+        route_dto.v_start = v_start_obj.strftime('%Y-%m-%d')
+        route_dto.v_end = v_end_obj.strftime('%Y-%m-%d')
+        return route_dto

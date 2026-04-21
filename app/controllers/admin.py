@@ -744,15 +744,13 @@ class AdminController:
             days_of_week = request.form.get('days_of_week', '')
             v_start = request.form.get('validity_start')
             v_end = request.form.get('validity_end')
-            validity = f"[{v_start}, {v_end})"
-            days_for_db = "{" + days_of_week + "}"
-            print(days_of_week,validity)
+            
             if not all([route_no, airplane_code, departure_airport, arrival_airport, scheduled_time, duration, v_start, v_end]):
                 flash("Ошибка: заполните абсолютно все поля!", "warning")
             else:
                 try:
                     dto_record= RoutesDTO(route_no=route_no, airplane_code=airplane_code, departure_airport=departure_airport, arrival_airport=arrival_airport,
-                                          scheduled_time=scheduled_time, duration=duration, days_of_week=days_for_db, validity=validity)
+                                          scheduled_time=scheduled_time, duration=duration, days_of_week=days_of_week, v_start=v_start, v_end=v_end)
                     self.service.create_data_routes(dto=dto_record)
 
                     flash("Запись успешно добавлена", "success")
@@ -784,10 +782,58 @@ class AdminController:
             flash("Ошибка при создании записи", "danger")
             return redirect(url_for('admin_bp.view_routes', page=page, q=query))
 
-
-
     def update_routes(self):
-        pass
+        if request.method == 'POST':
+            page = request.form.get('page')
+            query = request.form.get('q')
+            route_no = request.form.get('route_no')
+            airplane_code = request.form.get('airplane_code')
+            departure_airport = request.form.get('departure_airport')
+            arrival_airport = request.form.get('arrival_airport')
+            scheduled_time = request.form.get('scheduled_time')
+            duration = request.form.get('duration')
+            days_of_week = request.form.get('days_of_week', '')
+            v_start = request.form.get('validity_start')
+            v_end = request.form.get('validity_end')
+            if not all([route_no, airplane_code, departure_airport, arrival_airport, scheduled_time, duration, v_start, v_end]):
+                flash("Ошибка: заполните абсолютно все поля!", "warning")
+            else:
+                try:
+                    dto_record= RoutesDTO(route_no=route_no, airplane_code=airplane_code, departure_airport=departure_airport, arrival_airport=arrival_airport,
+                                          scheduled_time=scheduled_time, duration=duration, days_of_week=days_of_week, v_start=v_start, v_end=v_end)
+                    self.service.update_data_routes(dto=dto_record)
+                    flash("Запись успешно изменена", "success")
+                    return redirect(url_for('admin_bp.view_routes', page=page, q=query))
+                except Exception as e:
+                    flash(f"Ошибка при сохранении: {e}", "danger")
+                    return redirect(url_for('admin_bp.view_routes', page=page, q=query))
+
+        query = request.args.get('q', '')
+        page = request.args.get('page', 1, type=int)    
+        pk_columns = self.service.TABLE_KEYS['airports']
+        selected_id = request.args.get("selected_id","").strip()
+        dto_search = Table_dto_request(page=page, search_query=query)
+        try:
+            dto_response = self.service.get_data_routes(dto_search)
+            routes_dto = self.service.get_data_route_by_id(selected_id)
+            print(routes_dto.v_end, routes_dto.v_start)
+            data_dto = dto_response.data
+            columns = dto_response.columns
+            has_next = dto_response.has_next
+            data  = [obj.__dict__ for obj in data_dto]
+
+            return render_template('admin/overlay.html', 
+                                   data=data, columns = columns, 
+                                   selected_id = selected_id, 
+                                   current_page = page, 
+                                   has_next=has_next,
+                                   pk_columns=pk_columns,
+                                   item=routes_dto)
+        except Exception as e:
+            print(e)
+            flash("Ошибка при изменении записи", "danger")
+            return redirect(url_for('admin_bp.view_routes', page=page, q=query))
+
     def delete_routes(self):
         if request.method == 'POST':
             selected_id = request.form.get('selected_id')

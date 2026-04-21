@@ -4,7 +4,7 @@
         <table class="table table-sm table-striped table-bordered table-hover mb-0">
             <thead class="table-light sticky-top shadow-sm">
                 <tr>
-                    {% for col in columns %}
+                    {% for col in columns if col not in ['v_start', 'v_end'] %}
                     <th class="py-2 px-3">{{ col }}</th>
                     {% endfor %}
                 </tr>
@@ -18,7 +18,7 @@
                     {% endfor %}
                     {% set is_active = (ns.id|string == selected_id|string|replace(' ', '+')) %}
                     <tr class="{{ 'bg-primary text-white shadow' if is_active else '' }}">
-                        {% for col in columns %}
+                        {% for col in columns if col not in ['v_start', 'v_end'] %}
                         <td class="p-0 border-0">
                             <a href="?selected_id={{ ns.id }}&page={{ current_page }}&q={{ request.args.get('q', '') }}" 
                             class="text-decoration-none d-block py-2 px-3 {{ 'text-white' if is_active else 'text-reset' }}">

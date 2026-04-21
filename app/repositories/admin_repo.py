@@ -645,3 +645,44 @@ WHERE t.passenger_id = %s
         """
         params = [route_no, validity]
         self.query_db(sql, params)
+
+    def update_routes(self, dto:RoutesDTO):
+        sql = """
+                UPDATE routes 
+                SET route_no = %s, validity = %s, departure_airport = %s, arrival_airport = %s, airplane_code =%s, days_of_week=%s, scheduled_time=%s,duration=%s 
+                WHERE route_no = %s AND validity = %s;
+                """
+        params = [dto.route_no, dto.validity, dto.departure_airport, dto.arrival_airport, dto.airplane_code,
+                    dto.days_of_week, dto.scheduled_time, dto.duration, dto.route_no, dto.validity]
+        self.query_db(sql, params)
+
+    def get_route_by_id(self, route_no, validity):
+        sql = """
+            SELECT 
+            r.route_no,
+            r.validity,
+            r.departure_airport,
+            dep.airport_name->>'en' AS departure_airport_name,
+            dep.city->>'en' AS departure_city,
+            r.arrival_airport,
+            arr.airport_name->>'en' AS arrival_airport_name,
+            arr.city->>'en' AS arrival_city,
+            r.airplane_code,
+            ais.model->>'en' AS model,
+            r.days_of_week,
+            r.scheduled_time,
+            r.duration
+        FROM routes r
+        JOIN airports_data dep ON r.departure_airport = dep.airport_code
+        JOIN airports_data arr ON r.arrival_airport = arr.airport_code
+        JOIN airplanes_data ais ON r.airplane_code = ais.airplane_code
+            WHERE r.route_no = %s AND r.validity = %s
+            LIMIT 1;
+            """
+        params = [route_no, validity]
+        route = self.query_db(sql, params,fetchone=True)
+        if not route:
+            return None
+        field_names = list(Routes.__dataclass_fields__.keys())
+        route_obj = Routes(**{field: route[field] for field in field_names})
+        return route_obj

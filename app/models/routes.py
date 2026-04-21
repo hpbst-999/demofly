@@ -1,39 +1,42 @@
 from dataclasses import dataclass, field
 from datetime import  time, timedelta
-from typing import List
+from typing import List, Optional
 from psycopg2.extras import DateTimeTZRange
 
 @dataclass
 class Routes:
     route_no: str
-    validity: DateTimeTZRange
     departure_airport: str
     arrival_airport: str
     airplane_code: str
     days_of_week: List[int]
     scheduled_time: time
     duration: timedelta
+    validity: Optional[DateTimeTZRange]=None
     departure_airport_name: str = ""
     arrival_airport_name: str = ""
     departure_city: str = ""
     arrival_city: str = ""
     model: str = ""
 
+
 @dataclass
 class RoutesDTO:
     route_no: str
-    validity: str
     departure_airport: str
     arrival_airport: str
     airplane_code: str
     days_of_week: str
     scheduled_time: str
     duration: str
+    validity: str = ""
     departure_airport_name: str = ""
     arrival_airport_name: str = ""
     departure_city: str = ""
     arrival_city: str = ""
     model: str = ""
+    v_start:str = ""
+    v_end:str = ""
 
     @classmethod
     def convert_to_dto(cls, route: Routes) -> 'RoutesDTO':
@@ -41,7 +44,7 @@ class RoutesDTO:
         upper = route.validity.upper.isoformat() if route.validity and route.validity.upper else "∞"
         validity_str = f"[{lower},{upper})"
         
-        days_str = '{' + ','.join(map(str, route.days_of_week)) + '}'
+        days_str = ','.join(map(str, route.days_of_week))
         
         total_seconds = int(route.duration.total_seconds())
         h = total_seconds // 3600
@@ -64,5 +67,7 @@ class RoutesDTO:
             duration=duration_str,
             departure_city=route.departure_city,
             arrival_city=route.arrival_city,
-            model=route.model
+            model=route.model,
+            v_start = "",
+            v_end = ""
         )
