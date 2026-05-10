@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ "Редактирование" if item else "Создание" }}</title>
-    <link  href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <title>Создание бронирования</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="d-flex justify-content-end mb-3">
         <a href="/admin/bookings" class="btn-close" aria-label="Close"></a>
     </div>
@@ -16,101 +16,121 @@
     <form action="{{ request.full_path }}" method="POST">
         <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
         <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
-        <input type="hidden" name="selected_id" value="{{ item.book_ref if item else '' }}">
     
         <div class="mb-1">
             <h5 class="fw-bold text-primary">Данные бронирования</h5>
         </div>
     
-        <div class="row">
-            <div class="col-md-4 mb-3">
+        <div class="row mb-4">
+            <div class="col-md-4">
                 <label class="form-label fw-bold">Номер брони</label>
                 <input type="text" name="book_ref" class="form-control" 
                        placeholder="Напр: 0A1B2C" maxlength="6"
-                       value="{{ item.book_ref if item else '' }}" required 
-                       {% if item %}readonly{% endif %}>
-                <small class="text-muted">6 символов (буквы/цифры)</small>
+                       value="{{ draft.book_ref }}" required>
             </div>
-    
-            <div class="col-md-4 mb-3">
+            <div class="col-md-4">
                 <label class="form-label fw-bold">Дата бронирования</label>
                 <input type="datetime-local" name="book_date" class="form-control"
-                       value="{{ item.book_date if item else '' }}" required>
+                       value="{{ draft.book_date }}" required>
             </div>
-    
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Сумма</label>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Итоговая сумма</label>
                 <div class="input-group">
-                    <input type="number" step="0.01" name="total_amount" class="form-control"
-                           value="{{ item.total_amount if item else '' }}" required>
+                    <input type="number" step="0.01" class="form-control bg-light"
+                           value="{{ draft.total_amount }}" readonly title="Считается автоматически">
                     <span class="input-group-text">₽</span>
+                </div>
+                <small class="text-muted">Считается автоматически</small>
+            </div>
+        </div>
+    
+        <hr class="my-4 text-secondary">
+    
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-primary mb-0">Информация о билетах</h5>
+            <button type="submit" name="action" value="add_ticket" class="btn btn-sm btn-dark" formnovalidate>
+                + Добавить билет
+            </button>
+        </div>
+
+        {% for t in draft.tickets %}
+        {% set t_idx = loop.index0 %}
+        
+        <div class="card border-0 shadow-sm mb-4 bg-light">
+            <div class="card-body">
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-dark">Билет №{{ loop.index }}</span>
+                    {% if draft.tickets|length > 1 %}
+                    <button type="submit" name="action" value="del_ticket_{{ t_idx }}" class="btn-close" style="font-size: 0.8rem;" formnovalidate title="Удалить билет"></button>
+                    {% endif %}
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold small">Номер билета</label>
+                        <input type="text" name="ticket_no_{{ t_idx }}" class="form-control" value="{{ t.ticket_no }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold small">ID Пассажира</label>
+                        <input type="text" name="passenger_id_{{ t_idx }}" class="form-control" placeholder="1234 567890" value="{{ t.passenger_id }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold small">ФИО Пассажира</label>
+                        <input type="text" name="passenger_name_{{ t_idx }}" class="form-control" placeholder="IVAN IVANOV" value="{{ t.passenger_name }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold small">Тип рейса</label>
+                        <select name="outbound_{{ t_idx }}" class="form-select" required>
+                            <option value="true" {% if t.outbound %}selected{% endif %}>Прямой (Туда)</option>
+                            <option value="false" {% if t.outbound == False %}selected{% endif %}>Обратный/Транзит</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-2 pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold text-secondary small">Детали перелета </span>
+                        <button type="submit" name="action" value="add_flight_{{ t_idx }}" class="btn btn-sm btn-link fw-bold text-decoration-none p-0" formnovalidate>
+                            + Добавить сегмент
+                        </button>
+                    </div>
+
+                    {% for f in t.flights %}
+                    {% set f_idx = loop.index0 %}
+                    <div class="row align-items-end mb-3">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label fw-bold small text-muted">ID Рейса</label>
+                            <input type="text" name="flight_id_{{ t_idx }}_{{ f_idx }}" class="form-control form-control-sm" value="{{ f.flight_id }}" required>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-bold small text-muted">Класс обслуживания</label>
+                            <select name="fare_conditions_{{ t_idx }}_{{ f_idx }}" class="form-select form-select-sm" required>
+                                <option value="">Выберите класс...</option>
+                                <option value="Economy" {% if f.fare_conditions == 'Economy' %}selected{% endif %}>Economy</option>
+                                <option value="Comfort" {% if f.fare_conditions == 'Comfort' %}selected{% endif %}>Comfort</option>
+                                <option value="Business" {% if f.fare_conditions == 'Business' %}selected{% endif %}>Business</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-bold small text-muted">Цена сегмента (₽)</label>
+                            <input type="number" step="0.01" name="price_{{ t_idx }}_{{ f_idx }}" class="form-control form-control-sm" value="{{ f.price }}" required>
+                        </div>
+                        <div class="col-md-1 mb-2 text-end">
+                            {% if t.flights|length > 1 %}
+                            <button type="submit" name="action" value="del_flight_{{ t_idx }}_{{ f_idx }}" class="btn btn-sm btn-outline-danger w-100" formnovalidate title="Удалить сегмент">✕</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        {% endfor %}
     
-        <hr class="my-4 text-secondary">
-    
-        <div class="mb-1">
-            <h5 class="fw-bold text-primary">Информация о билете</h5>
-        </div>
-    
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Номер билета</label>
-                <input type="text" name="ticket_no" class="form-control"
-                       value="{{ item.ticket_no if item else '' }}" required>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">ID Пассажира</label>
-                <input type="text" name="passenger_id" class="form-control"
-                       placeholder="Напр: 1234 567890"
-                       value="{{ item.passenger_id if item else '' }}" required>
-            </div>
-        </div>
-    
-        <div class="mb-3">
-            <label class="form-label fw-bold">ФИО Пассажира</label>
-            <input type="text" name="passenger_name" class="form-control"
-                   placeholder="IVAN IVANOV"
-                   value="{{ item.passenger_name if item else '' }}" required>
-        </div>
-    
-        <div class="mb-3">
-            <label class="form-label fw-bold">Тип рейса</label>
-            <select name="outbound" class="form-select" required>
-                <option value="true" {% if item and item.outbound %}selected{% endif %}>Прямой</option>
-                <option value="false" {% if item and not item.outbound %}selected{% endif %}>Обратный/Транзит</option>
-            </select>
-        </div>
-    
-        <hr class="my-4 text-secondary">
-    
-        <div class="mb-1">
-            <h5 class="fw-bold text-primary">Данные рейса</h5>
-        </div>
-    
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">ID Рейса</label>
-                <input type="text" name="flight_id" class="form-control"
-                       value="{{ item.flight_id if item else '' }}" required>
-            </div>
-    
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Класс обслуживания</label>
-                <select name="fare_conditions" class="form-select" required>
-                    <option value="">Выберите класс...</option>
-                    <option value="Economy" {% if item and item.fare_conditions == 'Economy' %}selected{% endif %}>Economy</option>
-                    <option value="Comfort" {% if item and item.fare_conditions == 'Comfort' %}selected{% endif %}>Comfort</option>
-                    <option value="Business" {% if item and item.fare_conditions == 'Business' %}selected{% endif %}>Business</option>
-                </select>
-            </div>
-        </div>
-    
-        <div class="mt-4 pt-2 text-center">
-            <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
-                Сохранить
+        <div class="mt-5 pt-2 text-center">
+            <button type="submit" name="action" value="save" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+                Сохранить бронирование
             </button>
         </div>
     </form>

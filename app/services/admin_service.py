@@ -17,7 +17,7 @@ class AdminService:
     TABLE_KEYS = {
     "airports": "airport_code",
     "airplanes": "airplane_code",
-    "bookings": ["book_ref", "ticket_no","flight_id"],
+    "bookings": "book_ref",
     "flights": "flight_id",
     "boarding_passes": ["ticket_no","flight_id"],
     "routes":["route_no","validity"]
@@ -207,64 +207,97 @@ class AdminService:
         dto_response = Table_dto_response(data=data_dto, columns=columns, has_next=has_next)
         return dto_response
 
-    def create_data_booking(self, dto:BookingsDTO):
-        book_date_dt = self.parse_datetime(dto.book_date)
-        name_parts = dto.passenger_name.strip().split()
+    def create_data_booking(self, dto_list: list):
+        for index, dto in enumerate(dto_list):
+            book_date_dt = self.parse_datetime(dto.book_date)
+            name_parts = str(dto.passenger_name).strip().split()
+            
+            prefix = f"Ошибка (запись №{index + 1}): "
 
-        if len(dto.book_ref) != 6:
-            flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
-        elif len(dto.ticket_no) != 13:
-            flash("Введите корректный номер билета!", "warning")
-        elif float(dto.total_amount) < 0:
-            flash("Сумма бронирования не может быть отрицательная!", "warning")
-        elif len(name_parts) != 2:
-            flash("Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
-        elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', dto.passenger_id.strip()):
-            flash("ID пассажира должен быть в формате: AB 1234567890123", "warning")
-        elif not (book_date_dt):
-            flash("Укажите корректную дату", "warning")
-        elif not dto.flight_id.isdigit():
-            flash("Неверный код рейса", "warning")
-        else:
+            if len(dto.book_ref) != 6:
+                flash(prefix + "Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif len(dto.ticket_no) != 13:
+                flash(prefix + "Введите корректный номер билета (13 символов)!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif float(dto.total_amount) < 0:
+                flash(prefix + "Сумма бронирования не может быть отрицательной!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif len(name_parts) != 2:
+                flash(prefix + "Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', str(dto.passenger_id).strip()):
+                flash(prefix + "ID пассажира должен быть в формате: AB 1234567890123", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not book_date_dt:
+                flash(prefix + "Укажите корректную дату", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not str(dto.flight_id).isdigit():
+                flash(prefix + "Неверный код рейса", "warning")
+                raise ValueError("Validation failed")
+
+        for dto in dto_list:
             self.admin_repo.create_booking(dto=dto)
 
     def delete_data_booking(self, id):
-        book_ref, ticket_no,flight_id = id.split('|')
-        if len(book_ref) != 6:
+        if len(id) != 6:
             flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
-        elif len(ticket_no) != 13:
-            flash("Введите корректный номер билета!", "warning")
-        if not flight_id.isdigit():
-            flash("Неверный код рейса", "warning")
         else:
-            self.admin_repo.delete_booking(book_ref=book_ref, ticket_no=ticket_no, flight_id=flight_id)
+            self.admin_repo.delete_booking(book_ref=id)
 
-    def update_data_booking(self, dto:BookingsDTO):
-        book_date_dt = dto.book_date
-        name_parts = dto.passenger_name.strip().split()
-        if len(dto.book_ref) != 6:
-            flash("Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
-        elif len(dto.ticket_no) != 13:
-            flash("Введите корректный номер билета!", "warning")
-        elif float(dto.total_amount) < 0:
-            flash("Сумма бронирования не может быть отрицательная!", "warning")
-        elif len(name_parts) != 2:
-            flash("Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
-        elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', dto.passenger_id.strip()):
-            flash("ID пассажира должен быть в формате: AB 1234567890123", "warning")
-        elif not (book_date_dt):
-            flash("Укажите корректную дату", "warning")
-        elif not dto.flight_id.isdigit():
-            flash("Неверный код рейса", "warning")
-        else:
-            self.admin_repo.update_booking(dto=dto)
+    def update_data_booking(self, dto_list: list):
+        for index, dto in enumerate(dto_list):
+            book_date_dt = self.parse_datetime(dto.book_date)
+            name_parts = str(dto.passenger_name).strip().split()
+            
+            prefix = f"Ошибка (запись №{index + 1}): "
+
+            if len(dto.book_ref) != 6:
+                flash(prefix + "Номер бронирования (book_ref) должен состоять ровно из 6 символов!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif len(dto.ticket_no) != 13:
+                flash(prefix + "Введите корректный номер билета (13 символов)!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif float(dto.total_amount) < 0:
+                flash(prefix + "Сумма бронирования не может быть отрицательной!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif len(name_parts) != 2:
+                flash(prefix + "Имя пассажира должно состоять ровно из двух слов (Имя и Фамилия)!", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not re.match(r'^[a-zA-Z]{2}\s\d{13}$', str(dto.passenger_id).strip()):
+                flash(prefix + "ID пассажира должен быть в формате: AB 1234567890123", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not book_date_dt:
+                flash(prefix + "Укажите корректную дату", "warning")
+                raise ValueError("Validation failed")
+                
+            elif not str(dto.flight_id).isdigit():
+                flash(prefix + "Неверный код рейса", "warning")
+                raise ValueError("Validation failed")
+        self.admin_repo.update_booking(dto_list[0])
+        for dto in dto_list:
+            self.admin_repo.create_booking(dto=dto)
 
     def get_data_booking_by_id(self, id):
-        book_ref, ticket_no,flight_id = id.split('|')
-        booking = self.admin_repo.get_booking_by_id(book_ref=book_ref, ticket_no=ticket_no, flight_id=flight_id)
-        booking_dto = BookingsDTO.convert_to_dto(booking)
-        booking_dto.book_date = booking.book_date.strftime('%Y-%m-%dT%H:%M')
-        return booking_dto
+
+        bookings = self.admin_repo.get_booking_by_id(book_ref=id)
+        dto_list = []
+        for booking in bookings:
+            dto = BookingsDTO.convert_to_dto(booking)
+            dto.book_date = booking.book_date.strftime('%Y-%m-%dT%H:%M')
+            dto_list.append(dto)
+        return dto_list
     
 
     def get_data_boarding_passes(self, dto:Table_dto_request):

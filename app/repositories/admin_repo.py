@@ -313,46 +313,54 @@ class AdminRepository:
         bookings_obj = [Bookings(**{field: row[field] for field in field_names}) for row in bookings]
         return bookings_obj
     
-    def create_booking(self, dto:BookingsDTO):
+    def create_booking(self, dto: BookingsDTO):
         sql = """
-            INSERT INTO bookings (book_ref, book_date, total_amount) VALUES (%s, %s, %s);
-            INSERT INTO tickets (ticket_no, book_ref, passenger_id, passenger_name, outbound) VALUES (%s, %s, %s, %s, %s);
-            INSERT INTO segments (ticket_no, flight_id, fare_conditions, price) VALUES (%s, %s, %s, %s);
-            """
+            INSERT INTO bookings (book_ref, book_date, total_amount) 
+            VALUES (%s, %s, %s) 
+            ON CONFLICT (book_ref) DO NOTHING;
+
+            INSERT INTO tickets (ticket_no, book_ref, passenger_id, passenger_name, outbound) 
+            VALUES (%s, %s, %s, %s, %s) 
+            ON CONFLICT (ticket_no) DO NOTHING;
+
+            INSERT INTO segments (ticket_no, flight_id, fare_conditions, price) 
+            VALUES (%s, %s, %s, %s);
+        """
         params = [
-                dto.book_ref, dto.book_date, dto.total_amount, 
-                dto.ticket_no, dto.book_ref, dto.passenger_id, dto.passenger_name, dto.outbound,
-                dto.ticket_no, dto.flight_id, dto.fare_conditions, dto.total_amount 
-                ]
+            dto.book_ref, dto.book_date, dto.total_amount, 
+            dto.ticket_no, dto.book_ref, dto.passenger_id, dto.passenger_name, dto.outbound,
+            dto.ticket_no, dto.flight_id, dto.fare_conditions, dto.price 
+        ]
+        
         self.query_db(sql, params)
 
-    def delete_booking(self, book_ref, ticket_no,flight_id):
+    def delete_booking(self, book_ref):
         sql = """
-        DELETE FROM segments WHERE flight_id = %s and ticket_no = %s;
-        DELETE FROM tickets WHERE ticket_no = %s;
-        DELETE FROM bookings WHERE book_ref = %s;
-    """
-        params = [flight_id, ticket_no, ticket_no, book_ref]
+        DELETE FROM segments 
+        WHERE ticket_no IN (SELECT ticket_no FROM tickets WHERE book_ref = %s);
+
+        DELETE FROM tickets 
+        WHERE book_ref = %s;
+
+        DELETE FROM bookings 
+        WHERE book_ref = %s;
+        """
+        params = [book_ref, book_ref, book_ref]
         self.query_db(sql, params)
         
     def update_booking(self, dto:BookingsDTO):
         sql = """
-        UPDATE bookings
-        SET book_date = %s, total_amount = %s
-        WHERE book_ref = %s;
-        UPDATE tickets
-        SET passenger_id = %s, passenger_name = %s, outbound = %s
-        WHERE ticket_no = %s ;
-        UPDATE segments
-        SET flight_id = %s, fare_conditions = %s, price = %s
-        WHERE ticket_no = %s and flight_id = %s;
-    """
-        params = [dto.book_date, dto.total_amount, dto.book_ref,
-                dto.passenger_id, dto.passenger_name, dto.outbound,dto.ticket_no,
-                dto.flight_id,dto.fare_conditions, dto.total_amount, dto.ticket_no, dto.flight_id]
+            UPDATE bookings 
+            SET book_date = %s, total_amount = %s 
+            WHERE book_ref = %s;
+
+            DELETE FROM segments WHERE ticket_no IN (SELECT ticket_no FROM tickets WHERE book_ref = %s);
+            DELETE FROM tickets WHERE book_ref = %s;
+        """
+        params = [dto.book_date, dto.total_amount, dto.book_ref, dto.book_ref, dto.book_ref]
         self.query_db(sql, params)
 
-    def get_booking_by_id(self, book_ref, ticket_no,flight_id):
+    def get_booking_by_id(self, book_ref):
         sql = """
                 SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount,
                     s.fare_conditions, t.passenger_id, t.passenger_name,
@@ -360,18 +368,21 @@ class AdminRepository:
                 FROM bookings b
                 JOIN tickets t ON b.book_ref = t.book_ref
                 JOIN segments s ON t.ticket_no = s.ticket_no
-                WHERE b.book_ref = %s
-                AND t.ticket_no = %s
-                AND s.flight_id = %s
-                LIMIT 1;
+                WHERE b.book_ref = %s;
             """
-        params = [book_ref, ticket_no, flight_id]
-        booking = self.query_db(sql, params,fetchone=True)
+        params = [book_ref]
+        booking = self.query_db(sql, params)
         if not booking:
-            return None
+            return []
+            
         field_names = list(Bookings.__dataclass_fields__.keys())
-        booking_obj = Bookings(**{field: booking[field] for field in field_names})
-        return booking_obj
+        
+        bookings_list = []
+        for row in booking:
+            booking_obj = Bookings(**{field: row[field] for field in field_names})
+            bookings_list.append(booking_obj)
+            
+        return bookings_list
 
 
     def get_boarding_passes(self, dto:Table_dto_search):

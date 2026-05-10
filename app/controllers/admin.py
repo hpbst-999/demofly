@@ -12,7 +12,6 @@ class AdminController:
 
     def __init__(self, service: AdminService):
         self.service = service
-
     
     
     def admin_index(self):
@@ -573,87 +572,241 @@ class AdminController:
         except Exception as e:
             print(e)
             return jsonify({"error": "Server error"}), 500
-    
+
     def create_booking(self):
+        draft = {
+            'book_ref': '', 'book_date': '', 'total_amount': 0.0,
+            'tickets': []
+        }
+
         if request.method == 'POST':
-            page = request.form.get('page', '1')
-            query = request.form.get('q', '')
+            action = request.form.get('action')
+            draft['book_ref'] = request.form.get('book_ref', '')
+            draft['book_date'] = request.form.get('book_date', '')
+            total_amount = 0.0 
 
-            book_ref = request.form.get('book_ref')
-            book_date = request.form.get('book_date')
-            total_amount = request.form.get('total_amount')
-            ticket_no = request.form.get('ticket_no')
-            passenger_id = request.form.get('passenger_id')
-            passenger_name = request.form.get('passenger_name')
-            outbound = request.form.get('outbound') == 'true'
-            flight_id = request.form.get('flight_id')
-            fare_conditions = request.form.get('fare_conditions')
-
-            if not all([book_ref, book_date, total_amount, ticket_no, passenger_id, passenger_name,  flight_id, fare_conditions]):
-                    flash("Ошибка: заполните необходимые поля!", "warning")
-            else:
-                try:
-                    dto_record= BookingsDTO(book_ref=book_ref, book_date=book_date, total_amount=total_amount, ticket_no=ticket_no,
-                                            passenger_id=passenger_id, passenger_name=passenger_name, outbound=outbound,flight_id=flight_id, fare_conditions=fare_conditions)
-                    self.service.create_data_booking(dto=dto_record)
-                    flash("Запись успешно добавлена", "success")              
-                    return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
-                except Exception as e:
-                        flash(f"Ошибка при сохранении: {e}", "danger")
-                        return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+            t_idx = 0
+            while f'ticket_no_{t_idx}' in request.form:
+                ticket = {
+                    'ticket_no': request.form.get(f'ticket_no_{t_idx}', ''),
+                    'passenger_id': request.form.get(f'passenger_id_{t_idx}', ''),
+                    'passenger_name': request.form.get(f'passenger_name_{t_idx}', ''),
+                    'outbound': request.form.get(f'outbound_{t_idx}') == 'true',
+                    'flights': []
+                }
                 
-        query = request.args.get('q', '')
-        page = request.args.get('page', 1, type=int) 
-        try:
-            return render_template("admin/forms/bookings.html",   
-                                   current_page = page)
-        except Exception as e:
-            print(e)
-            flash("Ошибка при создании записи", "danger")
-            return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
-        
-    def update_booking(self):
-        if request.method == 'POST':
-            page = request.form.get('page', '1')
-            query = request.form.get('q', '')
+                f_idx = 0
+                while f'flight_id_{t_idx}_{f_idx}' in request.form:
+                    price_str = request.form.get(f'price_{t_idx}_{f_idx}', '0')
+                    try:
+                        flight_price = float(price_str) if price_str else 0.0
+                    except ValueError:
+                        flight_price = 0.0
+                    
+                    total_amount += flight_price 
 
-            book_ref = request.form.get('book_ref')
-            book_date = request.form.get('book_date')
-            total_amount = request.form.get('total_amount')
-            ticket_no = request.form.get('ticket_no')
-            passenger_id = request.form.get('passenger_id')
-            passenger_name = request.form.get('passenger_name')
-            outbound = request.form.get('outbound') == 'true'
-            flight_id = request.form.get('flight_id')
-            fare_conditions = request.form.get('fare_conditions')
+                    ticket['flights'].append({
+                        'flight_id': request.form.get(f'flight_id_{t_idx}_{f_idx}', ''),
+                        'fare_conditions': request.form.get(f'fare_conditions_{t_idx}_{f_idx}', ''),
+                        'price': price_str
+                    })
+                    f_idx += 1
+                
+                draft['tickets'].append(ticket)
+                t_idx += 1
 
-            if not all([book_ref, book_date, total_amount, ticket_no, passenger_id, passenger_name,  flight_id, fare_conditions]):
-                    flash("Ошибка: заполните необходимые поля!", "warning")
-            else:
+            draft['total_amount'] = round(total_amount, 2)
+
+            if action == 'add_ticket':
+                draft['tickets'].append({'ticket_no': '', 'passenger_id': '', 'passenger_name': '', 'outbound': True, 'flights': [{}]})
+                
+            elif action and action.startswith('add_flight_'):
+                idx = int(action.split('_')[-1])
+                draft['tickets'][idx]['flights'].append({}) 
+
+            elif action and action.startswith('del_ticket_'):
+                idx = int(action.split('_')[-1])
+                draft['tickets'].pop(idx)
+                draft['total_amount'] = sum(float(f.get('price') or 0) for t in draft['tickets'] for f in t['flights'])
+
+            elif action and action.startswith('del_flight_'):
+                parts = action.split('_')
+                t_idx, f_idx = int(parts[2]), int(parts[3])
+                draft['tickets'][t_idx]['flights'].pop(f_idx)
+                draft['total_amount'] = sum(float(f.get('price') or 0) for t in draft['tickets'] for f in t['flights'])
+
+            elif action == 'save':
+                print(draft)
+                dto_list = []
+                for t in draft['tickets']:
+                    for f in t['flights']:
+                        dto_list.append(BookingsDTO(
+                            book_ref=draft['book_ref'], 
+                            book_date=draft['book_date'], 
+                            total_amount=str(draft['total_amount']),
+                            ticket_no=t['ticket_no'], 
+                            passenger_id=t['passenger_id'], 
+                            passenger_name=t['passenger_name'],
+                            outbound=t.get('outbound', True), 
+                            flight_id=f.get('flight_id', ''), 
+                            fare_conditions=f.get('fare_conditions', ''), 
+                            price=f.get('price', '0')
+                        ))
                 try:
-                    dto_record= BookingsDTO(book_ref=book_ref, book_date=book_date, total_amount=total_amount, ticket_no=ticket_no,
-                                            passenger_id=passenger_id, passenger_name=passenger_name, outbound=outbound,flight_id=flight_id, fare_conditions=fare_conditions)
-                    self.service.update_data_booking(dto=dto_record)
-                    flash("Запись успешно изменена", "success")
-                    return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+                    self.service.create_data_booking(dto_list)
+                    flash("Бронирование успешно создано!", "success")
+                    return redirect(url_for('admin_bp.view_bookings'))
                 except Exception as e:
                     flash(f"Ошибка при сохранении: {e}", "danger")
-                    return redirect(url_for('admin_bp.view_bookings', page=page, q=query))  
-                
-        query = request.args.get('q', '')
-        page = request.args.get('page', 1, type=int) 
-        selected_id = request.args.get("selected_id","").strip()
-        try:
-            booking_dto = self.service.get_data_booking_by_id(selected_id)
 
-            return render_template('admin/forms/bookings.html',  
-                                   selected_id = selected_id, 
-                                   current_page = page,
-                                   item=booking_dto)
-        except Exception as e:
-            print(e)
-            flash("Ошибка при изменении записи", "danger")
-            return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+        if not draft['tickets']:
+            draft['tickets'].append({'ticket_no': '', 'passenger_id': '', 'passenger_name': '', 'outbound': True, 'flights': [{}]})
+
+        return render_template("admin/forms/bookings.html", draft=draft)
+        
+    def update_booking(self):
+        page = request.args.get('page', '1')
+        query = request.args.get('q', '')
+        selected_id = request.args.get("selected_id", "").strip()
+
+        draft = {
+            'book_ref': selected_id, 'book_date': '', 'total_amount': 0.0,
+            'tickets': []
+        }
+
+        if request.method == 'GET':
+            try:
+                dto_list = self.service.get_data_booking_by_id(selected_id)
+
+                if dto_list:
+                    draft['book_ref'] = dto_list[0].book_ref
+                    draft['book_date'] = dto_list[0].book_date
+                    
+                    tickets_dict = {}
+                    total_amount = 0.0
+
+                    for dto in dto_list:
+                        if dto.ticket_no not in tickets_dict:
+                            tickets_dict[dto.ticket_no] = {
+                                'ticket_no': dto.ticket_no,
+                                'passenger_id': dto.passenger_id,
+                                'passenger_name': dto.passenger_name,
+                                'outbound': dto.outbound,
+                                'flights': []
+                            }
+                        try:
+                            flight_price = float(dto.price) if dto.price else 0.0
+                        except ValueError:
+                            flight_price = 0.0
+                        total_amount += flight_price
+
+                        tickets_dict[dto.ticket_no]['flights'].append({
+                            'flight_id': dto.flight_id,
+                            'fare_conditions': dto.fare_conditions,
+                            'price': str(dto.price)
+                        })
+
+                    draft['tickets'] = list(tickets_dict.values())
+                    draft['total_amount'] = round(total_amount, 2)
+                else:
+                    flash("Бронирование не найдено", "warning")
+                    return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+
+            except Exception as e:
+                flash(f"Ошибка при загрузке данных: {e}", "danger")
+                return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+
+        elif request.method == 'POST':
+            page = request.form.get('page', '1')
+            query = request.form.get('q', '')
+            action = request.form.get('action')
+
+            draft['book_ref'] = request.form.get('book_ref', '')
+            draft['book_date'] = request.form.get('book_date', '')
+            total_amount = 0.0 
+
+            t_idx = 0
+            while f'ticket_no_{t_idx}' in request.form:
+                ticket = {
+                    'ticket_no': request.form.get(f'ticket_no_{t_idx}', ''),
+                    'passenger_id': request.form.get(f'passenger_id_{t_idx}', ''),
+                    'passenger_name': request.form.get(f'passenger_name_{t_idx}', ''),
+                    'outbound': request.form.get(f'outbound_{t_idx}') == 'true',
+                    'flights': []
+                }
+                
+                f_idx = 0
+                while f'flight_id_{t_idx}_{f_idx}' in request.form:
+                    price_str = request.form.get(f'price_{t_idx}_{f_idx}', '0')
+                    try:
+                        flight_price = float(price_str) if price_str else 0.0
+                    except ValueError:
+                        flight_price = 0.0
+                    
+                    total_amount += flight_price 
+
+                    ticket['flights'].append({
+                        'flight_id': request.form.get(f'flight_id_{t_idx}_{f_idx}', ''),
+                        'fare_conditions': request.form.get(f'fare_conditions_{t_idx}_{f_idx}', ''),
+                        'price': price_str
+                    })
+                    f_idx += 1
+                
+                draft['tickets'].append(ticket)
+                t_idx += 1
+
+            draft['total_amount'] = round(total_amount, 2)
+
+            if action == 'add_ticket':
+                draft['tickets'].append({'ticket_no': '', 'passenger_id': '', 'passenger_name': '', 'outbound': True, 'flights': [{}]})
+                
+            elif action and action.startswith('add_flight_'):
+                idx = int(action.split('_')[-1])
+                draft['tickets'][idx]['flights'].append({}) 
+
+            elif action and action.startswith('del_ticket_'):
+                idx = int(action.split('_')[-1])
+                draft['tickets'].pop(idx)
+                draft['total_amount'] = sum(float(f.get('price') or 0) for t in draft['tickets'] for f in t['flights'])
+
+            elif action and action.startswith('del_flight_'):
+                parts = action.split('_')
+                t_idx, f_idx = int(parts[2]), int(parts[3])
+                draft['tickets'][t_idx]['flights'].pop(f_idx)
+                draft['total_amount'] = sum(float(f.get('price') or 0) for t in draft['tickets'] for f in t['flights'])
+
+            elif action == 'save':
+                dto_list = []
+                for t in draft['tickets']:
+                    for f in t['flights']:
+                        dto_list.append(BookingsDTO(
+                            book_ref=draft['book_ref'], 
+                            book_date=draft['book_date'], 
+                            total_amount=str(draft['total_amount']),
+                            ticket_no=t['ticket_no'], 
+                            passenger_id=t['passenger_id'], 
+                            passenger_name=t['passenger_name'],
+                            outbound=t.get('outbound', True), 
+                            flight_id=f.get('flight_id', ''), 
+                            fare_conditions=f.get('fare_conditions', ''), 
+                            price=f.get('price', '0')
+                        ))
+                try:
+                    self.service.update_data_booking(dto_list)
+                    flash("Бронирование успешно обновлено!", "success")
+                    return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
+                except Exception as e:
+                    flash(f"Ошибка при обновлении: {e}", "danger")
+
+        if not draft['tickets']:
+            draft['tickets'].append({'ticket_no': '', 'passenger_id': '', 'passenger_name': '', 'outbound': True, 'flights': [{}]})
+
+        return render_template(
+            'admin/forms/bookings.html',  
+            selected_id=selected_id, 
+            current_page=page,
+            draft=draft
+        )
 
     def delete_booking(self):
         if request.method == 'POST':
