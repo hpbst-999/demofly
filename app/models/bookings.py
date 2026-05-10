@@ -12,6 +12,7 @@ class Bookings:
     passenger_id: str
     passenger_name: str
     flight_id: int
+    price: Decimal
     outbound: bool
 
 @dataclass
@@ -24,6 +25,7 @@ class BookingsDTO:
     passenger_id: str
     passenger_name: str
     flight_id: str
+    price: str
     outbound: str
 
     @classmethod
@@ -37,6 +39,7 @@ class BookingsDTO:
             passenger_id=str(booking.passenger_id),
             passenger_name=str(booking.passenger_name),
             flight_id=str(booking.flight_id),
+            price=str(booking.price),
             outbound=str(booking.outbound)
         )
 

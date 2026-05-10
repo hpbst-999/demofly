@@ -5,6 +5,7 @@ from app.models.boarding_passes import Boarding_passesDTO
 from app.models.bookings import BookingsDTO
 from app.models.flights import FlightsDTO
 from app.models.routes import RoutesDTO
+from app.models.segments import SegmentDTO
 from dataclasses import fields
 from app.repositories.admin_repo import AdminRepository
 import re
@@ -188,8 +189,8 @@ class AdminService:
         flight_dto = FlightsDTO.convert_to_dto(flight)
         flight_dto.scheduled_departure = flight.scheduled_departure.strftime('%Y-%m-%dT%H:%M')
         flight_dto.scheduled_arrival = flight.scheduled_arrival.strftime('%Y-%m-%dT%H:%M')
-        flight_dto.actual_departure = flight.actual_departure.strftime('%Y-%m-%dT%H:%M')
-        flight_dto.actual_arrival = flight.actual_arrival.strftime('%Y-%m-%dT%H:%M')
+        flight_dto.actual_departure = flight.actual_departure.strftime('%Y-%m-%dT%H:%M') if flight.actual_departure else None
+        flight_dto.actual_arrival = flight.actual_arrival.strftime('%Y-%m-%dT%H:%M') if flight.actual_arrival else None
         return flight_dto
 
 
@@ -321,6 +322,7 @@ class AdminService:
         boarding_pass_dto.boarding_time = boarding_pass.boarding_time.strftime('%Y-%m-%dT%H:%M')
         return boarding_pass_dto
     
+    
     def get_data_routes(self, dto:Table_dto_request):
         limit, offset = self.get_pagination_params(dto.page, page_size=20)
         search_dto = Table_dto_search(search_query=dto.search_query, limit=limit,offset=offset)
@@ -376,7 +378,7 @@ class AdminService:
     def get_data_route_by_id(self, id):
         route_no,validity = id.split('|')
         validity = validity.replace(' ', '+')
-        route = self.admin_repo.get_route_by_id(route_no, validity)
+        route = self.admin_repo.get_route_by_id(route_no, validity) #что делать если ключ изменился
         route_dto = RoutesDTO.convert_to_dto(route)
         v_start,v_end = route_dto.validity[1:-1].split(',')
         v_start_obj = datetime.fromisoformat(v_start)
@@ -384,3 +386,51 @@ class AdminService:
         route_dto.v_start = v_start_obj.strftime('%Y-%m-%d')
         route_dto.v_end = v_end_obj.strftime('%Y-%m-%d')
         return route_dto
+    
+
+    def get_data_timezone(self):
+        timezone = self.admin_repo.get_timezone()
+        return timezone
+        
+    def get_data_country(self):
+        country = self.admin_repo.get_country()
+        return country
+
+    def get_data_city_by_country(self, id):
+        city = self.admin_repo.get_city_by_country(id=id)
+        return city
+
+    def get_data_airplane_names(self):
+        airplane_list = self.admin_repo.get_airplane_names()
+        return airplane_list
+    
+    def get_data_airplane_code_by_model(self,name):
+        airplane_code = self.admin_repo.get_airplane_code_by_model(name=name)
+        return airplane_code
+    
+    def get_data_airport_names_by_city(self,id):
+        airport_list = self.admin_repo.get_airport_names_by_city(id=id)
+        return airport_list
+    
+    def get_data_airport_code_by_name(self,name):
+        airport_code = self.admin_repo.get_airport_code_by_name(name=name)
+        return airport_code
+    
+    def get_data_route_no_by_airports(self, scheduled_departure,departure_airport,arrival_airport):
+        route_no = self.admin_repo.get_route_no_by_airports(scheduled_departure=scheduled_departure,departure_airport=departure_airport,arrival_airport=arrival_airport)
+        return route_no
+    
+    def get_data_segments(self, id):
+        data = self.admin_repo.get_segments(id=id)
+        data_dto = [SegmentDTO.convert_to_dto(obj) for obj in data]
+        return data_dto
+
+    def get_data_segment_by_id(self,ticket_no, flight_id):
+        segment = self.admin_repo.get_segment_by_id(ticket_no, flight_id)
+        segment_dto = SegmentDTO.convert_to_dto(segment)
+        return segment_dto
+    
+    def get_data_seats(self, id):
+        seats = self.admin_repo.get_seats(id=id)
+        return seats
+    

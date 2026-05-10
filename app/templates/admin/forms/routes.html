@@ -1,91 +1,187 @@
-<form action="{{ request.full_path }}" method="POST">
-    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
-    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
-    <input type="hidden" name="selected_id" value="{{ item.route_no if item else '' }}">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ "Редактирование" if item else "Создание" }}</title>
+    <link  href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Номер маршрута</label>
-            <input type="text" name="route_no" class="form-control"
-                   value="{{ item.route_no if item else '' }}" required 
-                   placeholder="Напр: PG0001" {% if item %}readonly{% endif %}>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Код самолета</label>
-            <input type="text" name="airplane_code" class="form-control"
-                   value="{{ item.airplane_code if item else '' }}" required 
-                   maxlength="3" placeholder="Напр: 32N">
-        </div>
+<div class="container mt-5 pb-5">
+    <div class="d-flex justify-content-end mb-3">
+    <a href="/admin/routes?page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}&selected_id={{ selected_id }}" 
+       class="btn-close" 
+       aria-label="Close"></a>
     </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Аэропорт вылета</label>
-            <input type="text" name="departure_airport" class="form-control"
-                   value="{{ item.departure_airport if item else '' }}" required 
-                   maxlength="3" placeholder="SVO">
+    <form action="{{ request.full_path }}" method="POST">
+        <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+        <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+        <input type="hidden" name="selected_id" value="{{ request.args.get('selected_id', '') }}">
+    
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Номер маршрута</label>
+                <input type="text" name="route_no" class="form-control"
+                       value="{{ item.route_no if item else '' }}"  
+                       placeholder="Напр: PG0001">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Модель самолета</label>
+                <select name="airplane_name" class="form-select" >
+                    <option value="">-- Выберите модель --</option>
+                    {% for plane in airplane_list %}
+                        <option value="{{ plane }}" 
+                            {% if item and (item.model == plane or airplane_name == plane) %}selected{% endif %}>
+                            {{ plane }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Аэропорт прибытия</label>
-            <input type="text" name="arrival_airport" class="form-control"
-                   value="{{ item.arrival_airport if item else '' }}" required 
-                   maxlength="3" placeholder="AER">
+    
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-primary mb-3">Откуда</h5>
+                <div class="mb-2">
+                    <label class="small fw-bold">Страна</label>
+                    <div class="input-group">
+                        <select name="from_country" class="form-select">
+                            <option value="">-- Выберите --</option>
+                            {% for c in countries %}
+                            <option value="{{ c }}" {% if from_country == c or (item and item.departure_country == c) %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="small fw-bold">Город</label>
+                    <div class="input-group">
+                        <select name="from_city" class="form-select" {% if not from_cities %}disabled{% endif %}>
+                            <option value="">-- Выберите --</option>
+                            {% for city in from_cities %}
+                            <option value="{{ city }}" {% if from_city == city or (item and item.departure_city == city) %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">Аэропорт</label>
+                    <select name="departure_airport" class="form-select" required {% if not from_airports %}disabled{% endif %}>
+                        <option value="">-- Выберите аэропорт --</option>
+                        {% for air in from_airports %}
+                        <option value="{{ air}}" {% if (item and item.departure_airport_name == air) or (departure_airport == air) %}selected{% endif %}>
+                            {{ air }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6 border-start">
+                <h5 class="text-primary mb-3">Куда</h5>
+                <div class="mb-2">
+                    <label class="small fw-bold">Страна</label>
+                    <div class="input-group">
+                        <select name="to_country" class="form-select">
+                            <option value="">-- Выберите --</option>
+                            {% for c in countries %}
+                            <option value="{{ c }}" {% if to_country == c or (item and item.arrival_country == c) %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="small fw-bold">Город</label>
+                    <div class="input-group">
+                        <select name="to_city" class="form-select" {% if not to_cities %}disabled{% endif %}>
+                            <option value="">-- Выберите --</option>
+                            {% for city in to_cities %}
+                            <option value="{{ city }}" {% if to_city == city or (item and item.arrival_city == city) %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">Аэропорт</label>
+                    <select name="arrival_airport" class="form-select" required {% if not to_airports %}disabled{% endif %}>
+                        <option value="">-- Выберите аэропорт --</option>
+                        {% for air in to_airports %}
+                        <option value="{{ air }}" {% if (item and item.arrival_airport_name == air) or (arrival_airport == air) %}selected{% endif %}>
+                            {{ air }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <hr class="my-4 text-secondary">
-
-    <div class="mb-1">
-        <h5 class="fw-bold text-primary">Расписание и длительность</h5>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Время вылета (местное)</label>
-            <input type="time" name="scheduled_time" class="form-control"
-                   value="{{ item.scheduled_time if item else '' }}" required>
+    
+        <hr class="my-4 text-secondary">
+    
+        <div class="mb-1">
+            <h5 class="fw-bold text-primary">Расписание и длительность полета</h5>
         </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Длительность полета</label>
-            <input type="text" name="duration" class="form-control"
-                   value="{{ item.duration if item else '' }}" required 
-                   placeholder="02:30:00">
-            <small class="text-muted">Формат: HH:MM:SS (интервал)</small>
+    
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Время вылета (местное)</label>
+                <input type="time" name="scheduled_time" class="form-control"
+                       value="{{ item.scheduled_time if item else '' }}" >
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Длительность полета</label>
+                <input type="text" name="duration" class="form-control"
+                       value="{{ item.duration if item else '' }}"  
+                       placeholder="02:30:00">
+                <small class="text-muted">Формат: HH:MM:SS (интервал)</small>
+            </div>
         </div>
-    </div>
-
-    <div class="mb-3">
-    <label for="days_of_week" class="form-label fw-bold">Дни недели</label>
-    <input type="text" 
-           name="days_of_week" 
-           class="form-control" 
-           value="{{ item.days_of_week if item else '' }}" 
-           placeholder="Введите текст..." 
-           required>
-    </div>
-
-    <hr class="my-4 text-secondary">
-
-    <div class="mb-1">
-        <h5 class="fw-bold text-primary">Период действия (Validity)</h5>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Начало действия</label>
-            <input type="date" name="validity_start" class="form-control"
-                   value="{{ item.v_start if item else '' }}" required {% if item %}readonly{% endif %}>
+    
+        <div class="mb-3">
+        <label for="days_of_week" class="form-label fw-bold">Дни недели</label>
+        <input type="text" 
+               name="days_of_week" 
+               class="form-control" 
+               value="{{ item.days_of_week if item else '' }}" 
+               placeholder="Введите текст..." 
+               >
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Конец действия</label>
-            <input type="date" name="validity_end" class="form-control"
-                   value="{{ item.v_end if item else '' }}" required {% if item %}readonly{% endif %}>
+    
+        <hr class="my-4 text-secondary">
+    
+        <div class="mb-1">
+            <h5 class="fw-bold text-primary">Период действия</h5>
         </div>
-    </div>
+    
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Начало действия</label>
+                <input type="date" name="validity_start" class="form-control"
+                       value="{{ item.v_start if item else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Конец действия</label>
+                <input type="date" name="validity_end" class="form-control"
+                       value="{{ item.v_end if item else '' }}">
+            </div>
+        </div>
+    
+        <div class="mt-4 pt-2 text-center">
+            <button type="submit" name="action" value="save" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+                Сохранить
+            </button>
+        </div>
+    </form>
+</div>
 
-    <div class="mt-4 pt-2 text-center">
-        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
-            Сохранить
-        </button>
-    </div>
-</form>
+</body>
+</html>

@@ -1,51 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ "Редактирование" if item else "Создание" }}</title>
+    <link  href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
 
-
-<form action="{{ request.full_path }}" method="POST">
-    
-   
-    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
-    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
-    <input type="hidden" name="selected_id" value="{{ request.args.get('q', '') }}">
-
-
-    <div class="mb-3">
-        <label class="form-label fw-bold">Код аэропорта (3 буквы)</label>
-        <input type="text" name="airport_code" class="form-control" 
-               value="{{ item.airport_code if item else '' }}" 
-               {% if item %}readonly{% endif %} required maxlength="3">
+    <div class="container mt-5">
+    <div class="d-flex justify-content-end mb-3">
+        <a href="/admin/airports/?page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}" 
+           class="btn-close" 
+           aria-label="Close"></a>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Название аэропорта</label>
-        <input type="text" name="airport_name" class="form-control" 
-               value="{{ item.airport_name if item else '' }}" required>
-    </div>
+    <form action="{{ request.full_path }}" method="POST">
+        
+       
+        <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
+        <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+        <input type="hidden" name="selected_id" value="{{ request.args.get('selected_id', '') }}">
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Город</label>
-        <input type="text" name="city" class="form-control" 
-               value="{{ item.city if item else '' }}" required>
-    </div>
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Страна</label>
-        <input type="text" name="country" class="form-control" 
-               value="{{ item.country if item else '' }}" required>
+       <div class="mb-3">
+    <label class="form-label fw-bold">Страна</label>
+    <div class="input-group">
+        <select name="country" class="form-select">
+            <option value="">-- Выберите --</option>
+            {% for c in countries %}
+            <option value="{{ c }}" {% if country == c or (item and item.country == c) %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Координаты</label>
-        <input type="text" name="coordinates" class="form-control" 
-               value="{{ item.coordinates if item else '' }}">
-    </div>
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Часовой пояс</label>
-        <input type="text" name="timezone" class="form-control" 
-               value="{{ item.timezone if item else '' }}" required>
-    </div>
-    
-    <div class="mt-4 pt-2 text-center">
-        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3">Сохранить</button>
-    </div>
-</form>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Город</label>
+            <select name="city" class="form-select" >
+                <option value="">-- Выберите город --</option>
+                {% for city in cities %}
+                    <option value="{{ city }}" {% if item and item.city == city %}selected{% endif %}>
+                        {{ city }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Название аэропорта</label>
+            <input type="text" name="airport_name" class="form-control" 
+                   value="{{ item.airport_name if item else '' }}" >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Код аэропорта (3 буквы)</label>
+            <input type="text" name="airport_code" class="form-control" 
+                   value="{{ item.airport_code if item else '' }}" 
+                     maxlength="3">
+        </div>
+
+        
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Координаты</label>
+            <input type="text" name="coordinates" class="form-control" 
+                   value="{{ item.coordinates if item else '' }}">
+        </div>
+
+        <div class="mb-3">
+    <label class="form-label fw-bold">Часовой пояс</label>
+    <select name="timezone" class="form-control" >
+        <option value="">-- Выберите часовой пояс --</option>
+        {% for tz in timezone_list %}
+            <option value="{{ tz }}" {% if item and item.timezone == tz %}selected{% endif %}>
+                {{ tz }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+        
+        <div class="mt-4 pt-2 text-center">
+            <button type="submit" name="action" value="save" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+                Сохранить
+            </button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

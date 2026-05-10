@@ -1,95 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ "Редактирование" if item else "Создание" }}</title>
+    <link  href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
 
+<div class="container mt-5 pb-5">
+    <div class="d-flex justify-content-end mb-3">
+    <a href="/admin/flights?page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}&selected_id={{ selected_id }}" 
+       class="btn-close" 
+       aria-label="Close"></a>
+    </div>
 
-<form action="{{ request.full_path }}" method="POST">
-    
-   
+    <form action="{{ request.full_path }}" method="POST">
+        
+       
     <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
     <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
-    <input type="hidden" name="selected_id" value="{{ request.args.get('q', '') }}">
-
-
-
-<div class="mb-1">
-    <h5 class="fw-bold text-primary">Рейс</h5>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold">ID рейса</label>
-    <input type="text" name="flight_id" class="form-control"
-           value="{{ item.flight_id if item else '' }}" required readonly>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold">Статус</label>
-    <select name="status" class="form-control" required>
-        <option value="">Выберите статус</option>
-        <option value="Scheduled" {% if item and item.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
-        <option value="On Time" {% if item and item.status == 'On Time' %}selected{% endif %}>On Time</option>
-        <option value="Delayed" {% if item and item.status == 'Delayed' %}selected{% endif %}>Delayed</option>
-        <option value="Boarding" {% if item and item.status == 'Boarding' %}selected{% endif %}>Boarding</option>
-        <option value="Departed" {% if item and item.status == 'Departed' %}selected{% endif %}>Departed</option>
-        <option value="Arrived" {% if item and item.status == 'Arrived' %}selected{% endif %}>Arrived</option>
-        <option value="Cancelled" {% if item and item.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-    </select>
-</div>
-
-
-<div class="d-flex flex-wrap gap-3">
- 
-    <div class="flex-grow-1 mb-3" style="min-width: 300px;">
-        <label class="form-label fw-bold">Планируемое время вылета</label>
-        <input type="datetime-local" name="scheduled_departure" class="form-control"
-               value="{{ item.scheduled_departure if item else '' }}" required>
+    <input type="hidden" name="selected_id" value="{{ request.args.get('selected_id', '') }}">
+    
+    
+    
+    <div class="mb-1">
+        <h5 class="fw-bold text-primary">Рейс</h5>
     </div>
-
-    <div class="flex-grow-1 mb-3" style="min-width: 300px;">
-        <label class="form-label fw-bold">Планируемое время прибытия</label>
-        <input type="datetime-local" name="scheduled_arrival" class="form-control"
-               value="{{ item.scheduled_arrival if item else '' }}" required>
+    
+    <div class="mb-3">
+        <label class="form-label fw-bold">ID рейса</label>
+        <input type="text" name="flight_id" class="form-control"
+               value="{{ item.flight_id if item else '' }}"  readonly>
     </div>
-
-   
-    <div class="flex-grow-1 mb-3" style="min-width: 300px;">
-        <label class="form-label fw-bold">Фактическое время вылета</label>
-        <input type="datetime-local" name="actual_departure" class="form-control"
-               value="{{ item.actual_departure if item else '' }}">
-        <small class="text-muted">Может быть пустым</small>
+    
+    <div class="mb-3">
+        <label class="form-label fw-bold">Статус</label>
+        <select name="status" class="form-control" >
+            <option value="">Выберите статус</option>
+            <option value="Scheduled" {% if item and item.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+            <option value="On Time" {% if item and item.status == 'On Time' %}selected{% endif %}>On Time</option>
+            <option value="Delayed" {% if item and item.status == 'Delayed' %}selected{% endif %}>Delayed</option>
+            <option value="Boarding" {% if item and item.status == 'Boarding' %}selected{% endif %}>Boarding</option>
+            <option value="Departed" {% if item and item.status == 'Departed' %}selected{% endif %}>Departed</option>
+            <option value="Arrived" {% if item and item.status == 'Arrived' %}selected{% endif %}>Arrived</option>
+            <option value="Cancelled" {% if item and item.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
     </div>
-
-    <div class="flex-grow-1 mb-3" style="min-width: 300px;">
-        <label class="form-label fw-bold">Фактическое время прибытия</label>
-        <input type="datetime-local" name="actual_arrival" class="form-control"
-               value="{{ item.actual_arrival if item else '' }}">
-        <small class="text-muted">Может быть пустым</small>
+    
+    
+    <div class="d-flex flex-wrap gap-3">
+     
+        <div class="flex-grow-1 mb-3" style="min-width: 300px;">
+            <label class="form-label fw-bold">Планируемое время вылета</label>
+            <input type="datetime-local" name="scheduled_departure" class="form-control"
+                   value="{{ item.scheduled_departure if item else '' }}" >
+        </div>
+    
+        <div class="flex-grow-1 mb-3" style="min-width: 300px;">
+            <label class="form-label fw-bold">Планируемое время прибытия</label>
+            <input type="datetime-local" name="scheduled_arrival" class="form-control"
+                   value="{{ item.scheduled_arrival if item else '' }}" >
+        </div>
+    
+       
+        <div class="flex-grow-1 mb-3" style="min-width: 300px;">
+            <label class="form-label fw-bold">Фактическое время вылета</label>
+            <input type="datetime-local" name="actual_departure" class="form-control"
+                   value="{{ item.actual_departure if item else '' }}">
+            <small class="text-muted">Может быть пустым</small>
+        </div>
+    
+        <div class="flex-grow-1 mb-3" style="min-width: 300px;">
+            <label class="form-label fw-bold">Фактическое время прибытия</label>
+            <input type="datetime-local" name="actual_arrival" class="form-control"
+                   value="{{ item.actual_arrival if item else '' }}">
+            <small class="text-muted">Может быть пустым</small>
+        </div>
     </div>
-</div>
-
-
-
-<div class="mb-1 mt-1">
-    <h5 class="fw-bold text-primary">Маршрут</h5>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold">Номер маршрута</label>
-    <input type="text" name="route_no" class="form-control"
-           value="{{ item.route_no if item else '' }}" required>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold">Аэропорт вылета</label>
-    <input type="text" name="departure_airport" class="form-control"
-           value="{{ item.departure_airport if item else '' }}" required>
-</div>
-
-<div class="mb-3">
-    <label class="form-label fw-bold">Аэропорт прибытия</label>
-    <input type="text" name="arrival_airport" class="form-control"
-           value="{{ item.arrival_airport if item else '' }}" required>
-</div>
-
-
-    <div class="mt-4 pt-2 text-center">
-        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3">Сохранить</button>
+    
+    
+    
+    <div class="mb-1 mt-1">
+        <h5 class="fw-bold text-primary">Маршрут</h5>
     </div>
-</form>
+    
+    <div class="mb-3">
+        <label class="form-label fw-bold">Номер маршрута</label>
+        <div class="input-group">
+        <input type="text" name="route_no" class="form-control"
+               value="{{ route_no or (item.route_no if item else '') }}" >
+        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+        </div>
+        {% set value = route_no or (item.route_no if item else '') %}
+        {% if value and value|trim == '' %}
+            <div class="text-danger small mt-1">Такого маршрута не существует</div>
+        {% endif %}
+    </div>
+    
+            <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-primary mb-3">Откуда</h5>
+                <div class="mb-2">
+                    <label class="small fw-bold">Страна</label>
+                    <div class="input-group">
+                        <select name="from_country" class="form-select">
+                            <option value="">-- Выберите --</option>
+                            {% for c in countries %}
+                            <option value="{{ c }}" {% if from_country == c or (item and item.departure_country == c) %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="small fw-bold">Город</label>
+                    <div class="input-group">
+                        <select name="from_city" class="form-select" {% if not from_cities %}disabled{% endif %}>
+                            <option value="">-- Выберите --</option>
+                            {% for city in from_cities %}
+                            <option value="{{ city }}" {% if from_city == city or (item and item.departure_city == city) %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">Аэропорт</label>
+                    <select name="departure_airport" class="form-select" required {% if not from_airports %}disabled{% endif %}>
+                        <option value="">-- Выберите аэропорт --</option>
+                        {% for air in from_airports %}
+                        <option value="{{ air}}" {% if (item and item.departure_airport == air) or (departure_airport == air) %}selected{% endif %}>
+                            {{ air }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6 border-start">
+                <h5 class="text-primary mb-3">Куда</h5>
+                <div class="mb-2">
+                    <label class="small fw-bold">Страна</label>
+                    <div class="input-group">
+                        <select name="to_country" class="form-select">
+                            <option value="">-- Выберите --</option>
+                            {% for c in countries %}
+                            <option value="{{ c }}" {% if to_country == c or (item and item.arrival_country == c) %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="small fw-bold">Город</label>
+                    <div class="input-group">
+                        <select name="to_city" class="form-select" {% if not to_cities %}disabled{% endif %}>
+                            <option value="">-- Выберите --</option>
+                            {% for city in to_cities %}
+                            <option value="{{ city }}" {% if to_city == city or (item and item.arrival_city == city) %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold">Аэропорт</label>
+                    <select name="arrival_airport" class="form-select" required {% if not to_airports %}disabled{% endif %}>
+                        <option value="">-- Выберите аэропорт --</option>
+                        {% for air in to_airports %}
+                        <option value="{{ air }}" {% if (item and item.arrival_airport == air) or (arrival_airport == air) %}selected{% endif %}>
+                            {{ air }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    
+    
+        <div class="mt-4 pt-2 text-center">
+            <button type="submit" name="action" value="save" class="btn btn-dark btn-lg px-5 rounded-3 shadow-sm">
+                Сохранить
+            </button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

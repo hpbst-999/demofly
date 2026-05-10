@@ -5,6 +5,7 @@ from app.models.boarding_passes import Boarding_passes, Boarding_passesDTO
 from app.models.bookings import Bookings, BookingsDTO
 from app.models.flights import Flights, FlightsDTO
 from app.models.routes import Routes, RoutesDTO
+from app.models.segments import Segment,SegmentDTO
 from psycopg2.extras import RealDictCursor
 import json
 
@@ -277,10 +278,10 @@ class AdminRepository:
     def get_bookings(self, dto:Table_dto_search):
         sql ="""
             select b.book_ref,t.ticket_no, b.book_date, b.total_amount,s.fare_conditions,
-            t.passenger_id, t.passenger_name,s.flight_id , t.outbound
+            t.passenger_id, t.passenger_name,s.flight_id ,s.price, t.outbound
             from bookings b
             join tickets t on b.book_ref =t.book_ref 
-            join segments s on t.ticket_no = s.ticket_no 
+            join segments s on t.ticket_no = s.ticket_no
             offset %s
             limit %s
             """
@@ -292,50 +293,17 @@ class AdminRepository:
     
     def get_filter_bookings(self, dto:Table_dto_search):
         sql ="""
-
-SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount, s.fare_conditions,
-       t.passenger_id, t.passenger_name, s.flight_id, t.outbound
-FROM bookings b
-JOIN tickets t ON b.book_ref = t.book_ref 
-JOIN segments s ON t.ticket_no = s.ticket_no 
-WHERE b.book_ref = %s
-
-UNION ALL
-
-
-SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount, s.fare_conditions,
-       t.passenger_id, t.passenger_name, s.flight_id, t.outbound
-FROM bookings b
-JOIN tickets t ON b.book_ref = t.book_ref 
-JOIN segments s ON t.ticket_no = s.ticket_no 
-WHERE t.ticket_no = %s
-
-UNION ALL
-
-SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount, s.fare_conditions,
-       t.passenger_id, t.passenger_name, s.flight_id, t.outbound
-FROM bookings b
-JOIN tickets t ON b.book_ref = t.book_ref 
-JOIN segments s ON t.ticket_no = s.ticket_no 
-WHERE t.passenger_id = %s
-
-UNION ALL
-
-SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount, s.fare_conditions,
-       t.passenger_id, t.passenger_name, s.flight_id, t.outbound
-FROM bookings b
-JOIN tickets t ON b.book_ref = t.book_ref 
-JOIN segments s ON t.ticket_no = s.ticket_no 
-WHERE LOWER(t.passenger_name) = LOWER(%s)
-
-UNION ALL
-
-SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount, s.fare_conditions,
-       t.passenger_id, t.passenger_name, s.flight_id, t.outbound
-FROM bookings b
-JOIN tickets t ON b.book_ref = t.book_ref 
-JOIN segments s ON t.ticket_no = s.ticket_no 
-WHERE s.flight_id::text = %s
+            select b.book_ref,t.ticket_no, b.book_date, b.total_amount,s.fare_conditions,
+            t.passenger_id, t.passenger_name,s.flight_id,s.price, t.outbound
+            from bookings b
+            join tickets t on b.book_ref =t.book_ref 
+            join segments s on t.ticket_no = s.ticket_no 
+            WHERE
+                b.book_ref::text = %s OR
+                t.ticket_no::text = %s OR
+                t.passenger_id::text = %s OR
+                LOWER(t.passenger_name) = LOWER(%s) OR
+                s.flight_id::text = %s
             offset %s
             limit %s
             """
@@ -388,7 +356,7 @@ WHERE s.flight_id::text = %s
         sql = """
                 SELECT b.book_ref, t.ticket_no, b.book_date, b.total_amount,
                     s.fare_conditions, t.passenger_id, t.passenger_name,
-                    s.flight_id, t.outbound
+                    s.flight_id,s.price, t.outbound
                 FROM bookings b
                 JOIN tickets t ON b.book_ref = t.book_ref
                 JOIN segments s ON t.ticket_no = s.ticket_no
@@ -408,10 +376,18 @@ WHERE s.flight_id::text = %s
 
     def get_boarding_passes(self, dto:Table_dto_search):
         sql ="""
-            SELECT b.ticket_no, b.boarding_no, b.boarding_time, b.seat_no, s.fare_conditions,
-            t.passenger_id, t.passenger_name, b.flight_id, t.outbound
-            FROM boarding_passes b
-            JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
+          SELECT
+                b.ticket_no,
+                b.boarding_no,
+                b.boarding_time,
+                b.seat_no,
+                s.fare_conditions,
+                t.passenger_id,
+                t.passenger_name,
+                b.flight_id,
+                t.outbound
+            FROM segments s
+            JOIN boarding_passes b ON s.ticket_no = b.ticket_no AND s.flight_id = b.flight_id
             JOIN tickets t ON b.ticket_no = t.ticket_no
             offset %s
             limit %s
@@ -424,92 +400,29 @@ WHERE s.flight_id::text = %s
     
     def get_filter_boarding_passes(self, dto:Table_dto_search):
         sql ="""
-SELECT 
-    b.ticket_no, 
-    b.boarding_no, 
-    b.boarding_time, 
-    b.seat_no, 
-    s.fare_conditions,
-    t.passenger_id, 
-    t.passenger_name, 
-    s.flight_id, 
-    t.outbound 
-FROM boarding_passes b
-JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-JOIN tickets t ON b.ticket_no = t.ticket_no
-WHERE s.flight_id::text = %s
-
-UNION ALL
-
-SELECT 
-    b.ticket_no, 
-    b.boarding_no, 
-    b.boarding_time, 
-    b.seat_no, 
-    s.fare_conditions,
-    t.passenger_id, 
-    t.passenger_name, 
-    s.flight_id, 
-    t.outbound 
-FROM boarding_passes b
-JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-JOIN tickets t ON b.ticket_no = t.ticket_no
-WHERE t.ticket_no = %s
-
-UNION ALL
-
-SELECT 
-    b.ticket_no, 
-    b.boarding_no, 
-    b.boarding_time, 
-    b.seat_no, 
-    s.fare_conditions,
-    t.passenger_id, 
-    t.passenger_name, 
-    s.flight_id, 
-    t.outbound 
-FROM boarding_passes b
-JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-JOIN tickets t ON b.ticket_no = t.ticket_no
-WHERE b.boarding_no::text = %s
-
-UNION ALL
-
-SELECT 
-    b.ticket_no, 
-    b.boarding_no, 
-    b.boarding_time, 
-    b.seat_no, 
-    s.fare_conditions,
-    t.passenger_id, 
-    t.passenger_name, 
-    s.flight_id, 
-    t.outbound 
-FROM boarding_passes b
-JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-JOIN tickets t ON b.ticket_no = t.ticket_no
-WHERE LOWER(t.passenger_name) = LOWER(%s)
-
-UNION ALL
-
-SELECT 
-    b.ticket_no, 
-    b.boarding_no, 
-    b.boarding_time, 
-    b.seat_no, 
-    s.fare_conditions,
-    t.passenger_id, 
-    t.passenger_name, 
-    s.flight_id, 
-    t.outbound 
-FROM boarding_passes b
-JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-JOIN tickets t ON b.ticket_no = t.ticket_no
-WHERE t.passenger_id = %s
+            SELECT
+                b.ticket_no,
+                b.boarding_no,
+                b.boarding_time,
+                b.seat_no,
+                s.fare_conditions,
+                t.passenger_id,
+                t.passenger_name,
+                b.flight_id,
+                t.outbound
+            FROM segments s
+            JOIN boarding_passes b ON s.ticket_no = b.ticket_no AND s.flight_id = b.flight_id
+            JOIN tickets t ON b.ticket_no = t.ticket_no
+                        WHERE 
+                t.ticket_no::text = %s OR
+                b.boarding_no::text = %s OR
+                t.passenger_id::text = %s OR
+                LOWER(t.passenger_name) = LOWER(%s) OR
+                s.flight_id::text = %s
             offset %s
             limit %s
             """
-        params = [dto.search_query, dto.search_query, dto.search_query, dto.search_query, dto.search_query, dto.offset, dto.limit]
+        params = [dto.search_query, dto.search_query,  dto.search_query, dto.search_query, dto.search_query, dto.offset, dto.limit]
         boardisng_pases = self.query_db(sql, params)
         field_names = list(Boarding_passes.__dataclass_fields__.keys())
         boardisng_pases_obj = [Boarding_passes(**{field: row[field] for field in field_names}) for row in boardisng_pases]
@@ -545,11 +458,19 @@ WHERE t.passenger_id = %s
         
     def get_boarding_pass_by_id(self, ticket_no,flight_id):
         sql = """
-            SELECT b.ticket_no, b.boarding_no, b.boarding_time, b.seat_no, s.fare_conditions,
-            t.passenger_id, t.passenger_name, b.flight_id, t.outbound
-            FROM boarding_passes b
-            JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
-            JOIN tickets t ON b.ticket_no = t.ticket_no
+            SELECT
+            b.ticket_no,
+            b.boarding_no,
+            b.boarding_time,
+            b.seat_no,
+            s.fare_conditions,
+            t.passenger_id,
+            t.passenger_name,
+            b.flight_id,
+            t.outbound
+        FROM segments s
+        JOIN boarding_passes b ON s.ticket_no = b.ticket_no AND s.flight_id = b.flight_id
+        JOIN tickets t ON b.ticket_no = t.ticket_no
             WHERE b.ticket_no = %s AND b.flight_id = %s
             LIMIT 1;
             """
@@ -561,6 +482,7 @@ WHERE t.passenger_id = %s
         boarding_pass_obj = Boarding_passes(**{field: boarding_pass[field] for field in field_names})
         return boarding_pass_obj
 
+
     def get_routes(self, dto:Table_dto_search):
         sql ="""
             SELECT 
@@ -569,9 +491,11 @@ WHERE t.passenger_id = %s
             r.departure_airport,
             dep.airport_name->>'en' AS departure_airport_name,
             dep.city->>'en' AS departure_city,
+            dep.country->>'en' AS departure_country,
             r.arrival_airport,
             arr.airport_name->>'en' AS arrival_airport_name,
             arr.city->>'en' AS arrival_city,
+            arr.country->>'en' AS arrival_country,
             r.airplane_code,
             ais.model->>'en' AS model,
             r.days_of_week,
@@ -598,9 +522,11 @@ WHERE t.passenger_id = %s
             r.departure_airport,
             dep.airport_name->>'en' AS departure_airport_name,
             dep.city->>'en' AS departure_city,
+            dep.country->>'en' AS departure_country,
             r.arrival_airport,
             arr.airport_name->>'en' AS arrival_airport_name,
             arr.city->>'en' AS arrival_city,
+            arr.country->>'en' AS arrival_country,
             r.airplane_code,
             ais.model->>'en' AS model,
             r.days_of_week,
@@ -664,9 +590,11 @@ WHERE t.passenger_id = %s
             r.departure_airport,
             dep.airport_name->>'en' AS departure_airport_name,
             dep.city->>'en' AS departure_city,
+            dep.country->>'en' AS departure_country,
             r.arrival_airport,
             arr.airport_name->>'en' AS arrival_airport_name,
             arr.city->>'en' AS arrival_city,
+            arr.country->>'en' AS arrival_country,
             r.airplane_code,
             ais.model->>'en' AS model,
             r.days_of_week,
@@ -686,3 +614,113 @@ WHERE t.passenger_id = %s
         field_names = list(Routes.__dataclass_fields__.keys())
         route_obj = Routes(**{field: route[field] for field in field_names})
         return route_obj
+    
+
+    def get_timezone(self):
+        sql = "SELECT DISTINCT timezone FROM airports ORDER BY timezone"
+        timezone = self.query_db(sql)
+        return [row['timezone'] for row in timezone]
+        
+
+    def get_country(self):
+        sql = "SELECT DISTINCT country->>'en' as country FROM airports_data ORDER BY country->>'en'"
+        country = self.query_db(sql)
+        return [row['country'] for row in country]
+
+    def get_city_by_country(self, id):
+        sql = "SELECT DISTINCT city->>'en' as city FROM airports_data where country->>'en' = %s  ORDER BY city->>'en'"
+        params = [id]
+        city = self.query_db(sql, params=params)
+        return [row['city'] for row in city]
+    
+    def get_airport_names_by_city(self, id):
+        sql = "SELECT DISTINCT airport_name->>'en' as airport_name FROM airports_data where city->>'en' = %s  ORDER BY airport_name->>'en'"
+        params = [id]
+        airports = self.query_db(sql, params=params)
+        return [row['airport_name'] for row in airports]
+    
+
+    def get_airplane_names(self):
+        sql = "SELECT DISTINCT model->>'en' as model FROM airplanes_data"
+        airplanes = self.query_db(sql)
+        return [row['model'] for row in airplanes]
+
+    def get_airplane_code_by_model(self,name):
+        sql = "select airplane_code from airplanes_data where model->>'en' = %s"
+        params = [name]
+        airplane_code = self.query_db(sql, params=params, fetchone=True)
+        return airplane_code['airplane_code']
+    
+    def get_airport_code_by_name(self,name):
+        sql = "select airport_code from airports_data where airport_name->>'en' = %s"
+        params = [name]
+        airport_code = self.query_db(sql, params=params, fetchone=True)
+        return airport_code['airport_code']
+    
+    def get_route_no_by_airports(self, scheduled_departure,departure_airport,arrival_airport):
+        sql = "select route_no from routes where validity @> %s::timestamptz and departure_airport = %s and arrival_airport = %s"
+        params = [scheduled_departure,departure_airport,arrival_airport]
+        route_no = self.query_db(sql, params=params, fetchone=True)
+        if route_no is None:
+            return " "
+        return route_no['route_no']
+    
+    def get_segments(self, id):
+        sql = """
+            SELECT 
+                segments.ticket_no, 
+                segments.flight_id, 
+                segments.fare_conditions, 
+                segments.price,  
+                flights.scheduled_departure, 
+                routes.departure_airport, 
+                routes.arrival_airport
+            FROM segments
+            JOIN flights ON segments.flight_id = flights.flight_id
+            JOIN routes ON flights.route_no = routes.route_no 
+                AND routes.validity @> flights.scheduled_departure
+            WHERE segments.ticket_no = %s;
+            """
+        params = [id]
+        segments = self.query_db(sql, params)
+        field_names = list(Segment.__dataclass_fields__.keys())
+        segments_obj = [Segment(**{field: row[field] for field in field_names}) for row in segments]
+        return segments_obj
+    
+    def get_segment_by_id(self, ticket_no, flight_id):
+        sql = """
+            SELECT 
+                segments.ticket_no, 
+                segments.flight_id, 
+                segments.fare_conditions, 
+                segments.price,  
+                flights.scheduled_departure, 
+                routes.departure_airport, 
+                routes.arrival_airport
+            FROM segments
+            JOIN flights ON segments.flight_id = flights.flight_id
+            JOIN routes ON flights.route_no = routes.route_no 
+                AND routes.validity @> flights.scheduled_departure
+            WHERE segments.ticket_no = %s and segments.flight_id = %s;
+            """
+        params = [ticket_no, flight_id]
+        segment = self.query_db(sql, params,fetchone=True)
+        if not segment:
+            return None
+        field_names = list(Segment.__dataclass_fields__.keys())
+        segment_obj = Segment(**{field: segment[field] for field in field_names})
+        return segment_obj
+    
+    def get_seats(self,id):
+        sql="""
+            SELECT
+                seats.seat_no
+            FROM flights
+            JOIN routes ON flights.route_no = routes.route_no 
+                AND routes.validity @> flights.scheduled_departure
+            JOIN seats ON routes.airplane_code = seats.airplane_code
+            WHERE flights.flight_id = %s
+            """
+        params = [id]
+        seats = self.query_db(sql, params=params)
+        return [row['seat_no'] for row in seats]

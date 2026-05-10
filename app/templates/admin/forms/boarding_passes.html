@@ -1,55 +1,89 @@
-<form action="{{ request.full_path }}" method="POST">
-    <input type="hidden" name="page" value="{{ request.args.get('page', '1') }}">
-    <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ "Редактирование" if item else "Создание" }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body class="bg-light">
 
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Номер билета (13 цифр)</label>
-            <input type="text" name="ticket_no" 
-                class="form-control {% if item %}bg-light text-muted{% endif %}" 
-                value="{{ item.ticket_no if item else '' }}" 
-                {% if item %}readonly{% endif %} 
-                required maxlength="13">
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">ID рейса</label>
-            <input type="number" name="flight_id" 
-                class="form-control {% if item %}bg-light text-muted{% endif %}" 
-                value="{{ item.flight_id if item else '' }}" 
-                {% if item %}readonly{% endif %} 
-                required>
-        </div>
+<div class="container mt-5">
+    <div class="d-flex justify-content-end mb-3">
+    <a href="/admin/boarding_passes?page={{ request.args.get('page', '1') }}&q={{ request.args.get('q', '') }}&selected_id={{ selected_id }}" 
+       class="btn-close" 
+       aria-label="Close"></a>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label fw-bold">Номер места</label>
-        <input type="text" name="seat_no" class="form-control" 
-               value="{{ item.seat_no if item else '' }}" required maxlength="4">
-    </div>
-
-
-    <div class="p-3 bg-light rounded-3 border">
+    <form action="{{ request.full_path }}" method="POST" class="bg-white p-4 rounded shadow-sm border">
         
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold text-secondary">Порядковый номер посадки</label>
-                <input type="number" name="boarding_no" class="form-control border-secondary" 
-                       value="{{ item.boarding_no if item else '' }}" required>
+                <label class="form-label fw-bold">Номер билета</label>
+                <div class="input-group">
+                    <input type="text" name="ticket_no" class="form-control" 
+                           value="{{ ticket_no or (item.ticket_no if item else '') }}" 
+                           {% if item %}readonly{% endif %}  maxlength="13">
+                    <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                </div>
             </div>
 
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold text-secondary">Время посадки</label>
-                <input type="datetime-local" name="boarding_time" class="form-control border-secondary" 
-                       value="{{ item.boarding_time if item else '' }}"required>
+                <label class="form-label fw-bold">Выберите рейс</label>
+                <div class="input-group">
+                <select name="flight_id" class="form-select" >
+                    {% if not segments and not item %}
+                        <option value="">Выберите номер билета</option>
+                    {% else %}
+                        <option value="">-- Выберите сегмент --</option>
+                        {% for s in segments %}
+                            <option value="{{ s.flight_id }}" 
+                                {% if item and item.flight_id|string == s.flight_id|string %}selected{% endif %}>
+                                ID: {{ s.flight_id }} | {{ s.departure_airport }} → {{ s.arrival_airport }} | {{ s.scheduled_departure }} | {{ s.fare_conditions }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <button type="submit" name="action" value="update" class="btn btn-outline-secondary">✓</button>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="mt-4 pt-2 text-center">
-        <button type="submit" class="btn btn-dark btn-lg px-5 rounded-3">
-            Сохранить
-        </button>
-    </div>
-</form>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Номер места</label>
+                <select name="seat_no" class="form-select">
+                    <option value="">-- Выберите место --</option>
+                    {% for seat in seats %}
+                    <option value="{{ seat }}" {% if item and item.seat_no == seat %}selected{% endif %}>{{ seat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <div class="p-3 mb-4 bg-light rounded border">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold small">Номер посадки</label>
+                    <input type="number" name="boarding_no" class="form-control" 
+                           value="{{ item.boarding_no if item else '' }}" >
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold small">Время посадки</label>
+                    <input type="datetime-local" name="boarding_time" class="form-control" 
+                           value="{{ item.boarding_time if item else '' }}" >
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <button type="submit" name="action" value="save" class="btn btn-dark btn-lg px-5">
+                Сохранить
+            </button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

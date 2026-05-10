@@ -17,6 +17,8 @@ class Routes:
     arrival_airport_name: str = ""
     departure_city: str = ""
     arrival_city: str = ""
+    departure_country: str = ""
+    arrival_country:str = ""
     model: str = ""
 
 
@@ -34,6 +36,8 @@ class RoutesDTO:
     arrival_airport_name: str = ""
     departure_city: str = ""
     arrival_city: str = ""
+    departure_country:str = ""
+    arrival_country:str = ""
     model: str = ""
     v_start:str = ""
     v_end:str = ""
@@ -67,6 +71,8 @@ class RoutesDTO:
             duration=duration_str,
             departure_city=route.departure_city,
             arrival_city=route.arrival_city,
+            departure_country = route.departure_country,
+            arrival_country = route.arrival_country,
             model=route.model,
             v_start = "",
             v_end = ""
