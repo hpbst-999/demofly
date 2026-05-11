@@ -34,6 +34,7 @@ class AdminRepository:
             select airport_code, airport_name->>'en' as airport_name,
             city->>'en' as city, country->>'en' as country, coordinates, timezone
             from Airports_data
+            ORDER BY airport_code
             offset %s
             limit %s
             """
@@ -52,6 +53,7 @@ class AdminRepository:
                OR LOWER(airport_name->>'en') = LOWER(%s)
                OR LOWER(city->>'en') = LOWER(%s)
                OR LOWER(country->>'en') = LOWER(%s) 
+            ORDER BY airport_code
             offset %s
             limit %s
             """
@@ -104,11 +106,14 @@ class AdminRepository:
         return airport_obj
     
 
-    def get_airplanes(self):
+    def get_airplanes(self, dto:Table_dto_search):
         sql ="""
             select airplane_code, model->>'en' as model,range,speed from Airplanes_data
+            offset %s
+            limit %s
             """
-        airplanes = self.query_db(sql)
+        params = [dto.offset, dto.limit]
+        airplanes = self.query_db(sql, params)
         field_names = list(Airplanes.__dataclass_fields__.keys())
         airplanes_obj = [Airplanes(**{field: row[field] for field in field_names}) for row in airplanes]
         return airplanes_obj
@@ -155,8 +160,10 @@ class AdminRepository:
             select airplane_code, model->>'en' as model,range,speed from Airplanes_data
             WHERE LOWER(airplane_code) = LOWER(%s)
                OR LOWER(model->>'en') = LOWER(%s)
+            offset %s
+            limit %s
             """
-        params = [dto.search_query, dto.search_query]
+        params = [dto.search_query, dto.search_query,dto.offset, dto.limit]
         airplanes = self.query_db(sql, params=params)
         field_names = list(Airplanes.__dataclass_fields__.keys())
         airplanes_obj = [Airplanes(**{field: row[field] for field in field_names}) for row in airplanes]
@@ -175,6 +182,7 @@ class AdminRepository:
             join airplanes_data airp on airp.airplane_code = r.airplane_code
             join airports_data dep on dep.airport_code = r.departure_airport 
             join airports_data arr on arr.airport_code = r.arrival_airport
+            ORDER BY f.flight_id ASC
             offset %s
             limit %s
             """
@@ -197,16 +205,17 @@ class AdminRepository:
             join airports_data dep on dep.airport_code = r.departure_airport 
             join airports_data arr on arr.airport_code = r.arrival_airport
             WHERE
-            r.route_no::text = %s OR
+            r.route_no = %s OR
             f.flight_id::text = %s OR
-            LOWER(dep.airport_name->>'en') = LOWER(%s) OR
-            LOWER(arr.airport_name->>'en') = LOWER(%s) OR
-            LOWER(dep.city->>'en') = LOWER(%s) OR
-            LOWER(arr.city->>'en') = LOWER(%s) OR
-            LOWER(dep.country->>'en') = LOWER(%s) OR
-            LOWER(arr.country->>'en') = LOWER(%s) OR
+            dep.airport_name->>'en' = %s OR
+            arr.airport_name->>'en' = %s OR
+            dep.city->>'en' = %s OR
+            arr.city->>'en' = %s OR
+            dep.country->>'en' = %s OR
+            arr.country->>'en' = %s OR
             f.scheduled_departure::text ILIKE %s OR
             f.scheduled_arrival::text ILIKE %s
+            ORDER BY f.flight_id ASC
             offset %s
             limit %s
             """
@@ -282,6 +291,7 @@ class AdminRepository:
             from bookings b
             join tickets t on b.book_ref =t.book_ref 
             join segments s on t.ticket_no = s.ticket_no
+            ORDER BY b.book_date DESC
             offset %s
             limit %s
             """
@@ -299,15 +309,15 @@ class AdminRepository:
             join tickets t on b.book_ref =t.book_ref 
             join segments s on t.ticket_no = s.ticket_no 
             WHERE
-                b.book_ref::text = %s OR
-                t.ticket_no::text = %s OR
-                t.passenger_id::text = %s OR
-                LOWER(t.passenger_name) = LOWER(%s) OR
+                b.book_ref = %s OR
+                t.ticket_no = %s OR
+                t.passenger_name = %s OR
                 s.flight_id::text = %s
+            ORDER BY b.book_date DESC
             offset %s
             limit %s
             """
-        params = [dto.search_query, dto.search_query, dto.search_query, dto.search_query, dto.search_query, dto.offset, dto.limit]
+        params = [dto.search_query, dto.search_query, dto.search_query, dto.search_query, dto.offset, dto.limit]
         bookings = self.query_db(sql, params)
         field_names = list(Bookings.__dataclass_fields__.keys())
         bookings_obj = [Bookings(**{field: row[field] for field in field_names}) for row in bookings]
@@ -397,9 +407,10 @@ class AdminRepository:
                 t.passenger_name,
                 b.flight_id,
                 t.outbound
-            FROM segments s
-            JOIN boarding_passes b ON s.ticket_no = b.ticket_no AND s.flight_id = b.flight_id
+            FROM boarding_passes b  
+            JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
             JOIN tickets t ON b.ticket_no = t.ticket_no
+            ORDER BY b.flight_id asc
             offset %s
             limit %s
             """
@@ -421,19 +432,18 @@ class AdminRepository:
                 t.passenger_name,
                 b.flight_id,
                 t.outbound
-            FROM segments s
-            JOIN boarding_passes b ON s.ticket_no = b.ticket_no AND s.flight_id = b.flight_id
+            FROM boarding_passes b 
+            JOIN segments s ON b.ticket_no = s.ticket_no AND b.flight_id = s.flight_id
             JOIN tickets t ON b.ticket_no = t.ticket_no
-                        WHERE 
-                t.ticket_no::text = %s OR
+            WHERE 
+                t.ticket_no = %s OR
                 b.boarding_no::text = %s OR
-                t.passenger_id::text = %s OR
-                LOWER(t.passenger_name) = LOWER(%s) OR
+                t.passenger_name = %s OR
                 s.flight_id::text = %s
-            offset %s
-            limit %s
+            OFFSET %s
+            LIMIT %s
             """
-        params = [dto.search_query, dto.search_query,  dto.search_query, dto.search_query, dto.search_query, dto.offset, dto.limit]
+        params = [dto.search_query, dto.search_query,  dto.search_query, dto.search_query, dto.offset, dto.limit]
         boardisng_pases = self.query_db(sql, params)
         field_names = list(Boarding_passes.__dataclass_fields__.keys())
         boardisng_pases_obj = [Boarding_passes(**{field: row[field] for field in field_names}) for row in boardisng_pases]
@@ -516,6 +526,7 @@ class AdminRepository:
         JOIN airports_data dep ON r.departure_airport = dep.airport_code
         JOIN airports_data arr ON r.arrival_airport = arr.airport_code
         JOIN airplanes_data ais ON r.airplane_code = ais.airplane_code
+        ORDER BY r.route_no ASC
             offset %s
             limit %s
             """
@@ -549,10 +560,11 @@ class AdminRepository:
         JOIN airplanes_data ais ON r.airplane_code = ais.airplane_code
         WHERE 
         LOWER(r.route_no) = LOWER(%s)
-        OR LOWER(dep.airport_name->>'en') = LOWER(%s)
-        OR LOWER(arr.airport_name->>'en') = LOWER(%s)
-        OR LOWER(dep.city->>'en') = LOWER(%s)
-        OR LOWER(arr.city->>'en') = LOWER(%s)
+        OR dep.airport_name->>'en' = %s
+        OR arr.airport_name->>'en' = %s
+        OR dep.city->>'en' = %s
+        OR arr.city->>'en' = %s
+        ORDER BY r.route_no ASC
             offset %s
             limit %s
             """

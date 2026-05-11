@@ -94,7 +94,7 @@ class AdminService:
         if dto.search_query:
             data = self.admin_repo.det_filter_airplanes(search_dto)
         else:
-            data = self.admin_repo.get_airplanes()
+            data = self.admin_repo.get_airplanes(search_dto)
         has_next = len(data) > limit-1
         data_dto = [AirplanesDTO.convert_to_dto(obj) for obj in data]
         columns = [f.name for f in fields(AirplanesDTO)]
