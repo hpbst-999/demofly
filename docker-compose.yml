@@ -1,17 +1,16 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./00-create.sql:/docker-entrypoint-initdb.d/00-create.sql
       - ./demo-20250901-3m.sql.gz:/docker-entrypoint-initdb.d/01-demo.sql.gz
       - ./setup.sql:/docker-entrypoint-initdb.d/02-setup.sql
   web:
