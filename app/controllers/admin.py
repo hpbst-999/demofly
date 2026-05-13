@@ -149,7 +149,7 @@ class AdminController:
                         flash("Запись успешно изменена", "success")
                         return redirect(url_for('admin_bp.view_airports', page=page, q=query))
                     except Exception as e:
-                        flash(f"Ошибка при сохранении: {e}", "danger")
+                        flash(f"Ошибка при изменении: {e}", "danger")
                         return redirect(url_for('admin_bp.view_airports', page=page, q=query))
 
         query = request.args.get('q', '')
@@ -167,7 +167,7 @@ class AdminController:
                                    
         except Exception as e:
             print(e)
-            flash("Ошибка при создании записи", "danger")
+            flash("Ошибка при изменении записи", "danger")
             return redirect(url_for('admin_bp.view_airports', page=page, q=query))   
 
     def delete_airport(self):
@@ -709,7 +709,7 @@ class AdminController:
                     draft['tickets'] = list(tickets_dict.values())
                     draft['total_amount'] = round(total_amount, 2)
                 else:
-                    flash("Бронирование не найдено", "warning")
+                    flash("Бронирование не найдено", "danger")
                     return redirect(url_for('admin_bp.view_bookings', page=page, q=query))
 
             except Exception as e:
@@ -960,7 +960,7 @@ class AdminController:
                                    current_page = page, item=boarding_pass_dto,seats=seats, segments=segments)
         except Exception as e:
             print(e)
-            flash("Ошибка при создании записи", "danger")
+            flash("Ошибка при изменении записи", "danger")
             return redirect(url_for('admin_bp.view_boarding_passes', page=page, q=query))
 
     def delete_boarding_pass(self):
@@ -1189,7 +1189,7 @@ class AdminController:
                         flash("Запись успешно изменена", "success")
                         return redirect(url_for('admin_bp.view_routes', page=page, q=query))
                     except Exception as e:
-                        flash(f"Ошибка при сохранении: {e}", "danger")
+                        flash(f"Ошибка при изменении: {e}", "danger")
                         return redirect(url_for('admin_bp.view_routes', page=page, q=query))
 
         query = request.args.get('q', '')
@@ -1212,7 +1212,7 @@ class AdminController:
                                    to_cities=to_cities, from_airports= from_airports, to_airports= to_airports)
         except Exception as e:
             print(e)
-            flash("Ошибка при создании записи", "danger")
+            flash("Ошибка при изменении", "danger")
             return redirect(url_for('admin_bp.view_routes', page=page, q=query))
 
     def delete_routes(self):
